@@ -18,6 +18,7 @@
 | Implementacja, naprawa błędu, refaktoryzacja istniejącego projektu | `.agents/skills/focused-coding/SKILL.md` |
 | Audyt bezpieczeństwa, analiza podatności, autoryzowane testy | `.agents/skills/security-audit/SKILL.md` |
 | Implementacja zatwierdzonej naprawy bezpieczeństwa | `security-audit` oraz `focused-coding` z katalogu `.agents/skills/` |
+| Wieloaspektowe rozeznanie w internecie lub prośba o zespół badawczy | `.agents/skills/internet-research-team/SKILL.md`; dobierz role do celu, a końcową weryfikację wykonaj po zebraniu materiału |
 | Inne zadanie | Sprawdź opisy dostępnych skilli; nie wymuszaj niepasującego |
 
 Zasady bieżącego sprawdzania błędów zapisane poniżej obowiązują przy kodowaniu niezależnie od wyboru skilla. Ten indeks jest punktem startowym; uwzględniaj też nowe skille znalezione w katalogu.
