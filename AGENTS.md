@@ -13,7 +13,8 @@
 ### Indeks doboru
 | Rodzaj zadania | Skill do odczytania |
 | --- | --- |
-| Nowa aplikacja, gra lub samodzielny projekt | Najpierw `.agents/skills/project-planning/SKILL.md`; dopiero po przedstawieniu planu i rozstrzygnięciu blokerów `.agents/skills/focused-coding/SKILL.md` przy kodowaniu |
+| Nowa aplikacja, gra lub samodzielny projekt | `.agents/skills/project-planning/SKILL.md` wraz z `.agents/skills/originality-research/SKILL.md`: potrzeby → rozeznanie rynku → świeża koncepcja → pełny plan; dopiero potem `.agents/skills/focused-coding/SKILL.md` przy kodowaniu |
+| Świeży pomysł lub rozeznanie rynku bez zlecenia budowy | `.agents/skills/originality-research/SKILL.md`; bez rozpoczynania implementacji |
 | Implementacja, naprawa błędu, refaktoryzacja istniejącego projektu | `.agents/skills/focused-coding/SKILL.md` |
 | Audyt bezpieczeństwa, analiza podatności, autoryzowane testy | `.agents/skills/security-audit/SKILL.md` |
 | Implementacja zatwierdzonej naprawy bezpieczeństwa | `security-audit` oraz `focused-coding` z katalogu `.agents/skills/` |
