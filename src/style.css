@@ -216,7 +216,7 @@ main {
   letter-spacing: -0.5px;
   margin: 8px 0;
 }
-.quest-panel > p {
+.quest-panel p {
   font-size: 10px;
   color: #949783;
   margin: 0 0 19px;
@@ -1122,7 +1122,7 @@ kbd {
     font-size: 13px;
     margin: 5px 0;
   }
-  .quest-panel > p {
+  .quest-panel p {
     font-size: 8px;
     margin-bottom: 12px;
   }
@@ -1240,7 +1240,7 @@ kbd {
     top: 107px;
     padding: 12px;
   }
-  .quest-panel > p {
+  .quest-panel p {
     display: none;
   }
   .quest-panel ol {
@@ -1321,4 +1321,502 @@ kbd {
 }
 .modal-mark svg {
   height: 1em;
+}
+
+/* Touch-first controls share one layout in portrait, landscape and on tablets. */
+.quest-toggle {
+  display: none;
+}
+.zoom-controls {
+  position: absolute;
+  right: 24px;
+  top: 115px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zoom-controls button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #edf2dcaa;
+  background: #f7f3e8df;
+  border-radius: 9px;
+  font-size: 24px;
+  touch-action: manipulation;
+}
+.workshop-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: #193b3255;
+  z-index: 3;
+}
+.workshop-backdrop[hidden] {
+  display: none;
+}
+button {
+  touch-action: manipulation;
+}
+@media (max-width: 850px), (pointer: coarse) {
+  :root {
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --header: 64px;
+  }
+  body {
+    overscroll-behavior: none;
+  }
+  .topbar {
+    height: calc(var(--header) + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) max(12px, var(--safe-right)) 0
+      max(12px, var(--safe-left));
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .top-actions .icon-button {
+    min-width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  .save-status {
+    font-size: 9px;
+    max-width: 70px;
+    line-height: 1.4;
+  }
+  .world-label {
+    display: none;
+  }
+  main {
+    height: calc(100dvh - var(--header) - env(safe-area-inset-top, 0px));
+  }
+  .viewport {
+    right: 0;
+  }
+  .location {
+    top: 14px;
+    left: max(14px, var(--safe-left));
+  }
+  .location h1 {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+  .location .eyebrow {
+    font-size: 7px;
+  }
+  .location p {
+    font-size: 10px;
+  }
+  .quest-panel {
+    top: 97px;
+    left: max(14px, var(--safe-left));
+    padding: 0;
+    width: 190px;
+    border-radius: 10px;
+    background: #f7f3e8ed;
+  }
+  .quest-panel > .eyebrow,
+  .quest-panel > h2 {
+    display: none;
+  }
+  .quest-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 12px 14px;
+    min-height: 44px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .quest-toggle span {
+    font-size: 18px;
+  }
+  #quest-details {
+    display: none;
+    padding: 0 14px 14px;
+  }
+  .quest-panel.expanded #quest-details {
+    display: block;
+  }
+  .quest-panel.expanded .quest-toggle span {
+    transform: rotate(180deg);
+  }
+  #quest-details > p {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  .quest-panel strong {
+    font-size: 11px;
+  }
+  .quest-panel small {
+    font-size: 10px;
+  }
+  .quest-panel ol {
+    gap: 12px;
+  }
+  .quest-footer {
+    font-size: 10px;
+  }
+  .compass {
+    display: none;
+  }
+  .zoom-controls {
+    top: 18px;
+    right: max(14px, var(--safe-right));
+  }
+  .island-caption {
+    display: none;
+  }
+  .bottom-hud {
+    height: calc(64px + var(--safe-bottom));
+    padding: 0 max(14px, var(--safe-right)) var(--safe-bottom)
+      max(14px, var(--safe-left));
+  }
+  .pocket {
+    font-size: 12px;
+  }
+  .pocket small {
+    font-size: 10px;
+    max-width: 170px;
+  }
+  .key-guide {
+    display: none;
+  }
+  .mobile-craft {
+    display: block;
+    min-height: 44px;
+    font-size: 13px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    background: #405d44;
+    color: #f5f0dc;
+    border: 0;
+  }
+  .touch-pad {
+    display: flex;
+    left: max(14px, var(--safe-left));
+    bottom: calc(82px + var(--safe-bottom));
+    gap: 6px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .touch-pad div {
+    gap: 6px;
+  }
+  .touch-pad button {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    touch-action: none;
+    border-radius: 12px;
+    background: #f3f4e5df;
+  }
+  .touch-pad button.pressed {
+    background: #cfdfb6;
+    box-shadow: inset 0 0 0 2px #7c9768;
+  }
+  .interaction {
+    right: max(14px, var(--safe-right));
+    left: auto;
+    transform: none;
+    bottom: calc(93px + var(--safe-bottom));
+    gap: 8px;
+    align-items: center;
+    width: 142px;
+    white-space: normal;
+  }
+  .gather-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 70px;
+    border-radius: 18px;
+    justify-content: center;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .gather-button kbd,
+  .gather-button .action-arrow {
+    display: none;
+  }
+  .gather-button.pressed {
+    background: #dfeccc;
+    box-shadow: 0 0 0 4px #f4f2d54d;
+  }
+  #target-hint {
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: center;
+    max-width: 140px;
+  }
+  .toast {
+    bottom: calc(223px + var(--safe-bottom));
+    font-size: 13px;
+    line-height: 1.5;
+    min-width: 0;
+    width: max-content;
+    max-width: 90%;
+  }
+  .workshop {
+    width: min(420px, 100%);
+    top: 0;
+    bottom: 0;
+    right: 0;
+    border-radius: 18px 0 0 18px;
+    padding: 18px max(18px, var(--safe-right)) calc(12px + var(--safe-bottom))
+      18px;
+    transform: translateX(102%);
+    transition: transform 0.2s;
+    z-index: 4;
+    box-shadow: 0 12px 40px #193b3240;
+  }
+  .workshop.mobile-open {
+    transform: translateX(0);
+  }
+  #close-workshop {
+    display: block;
+    min-width: 48px;
+    height: 48px;
+    font-size: 25px;
+  }
+  .workshop-title .eyebrow {
+    font-size: 9px;
+  }
+  .workshop h2 {
+    font-size: 25px;
+    gap: 30px;
+    margin: 6px 0 16px;
+  }
+  .material-grid {
+    margin-bottom: 18px;
+    gap: 8px;
+  }
+  .section-heading h3,
+  .recipes-heading h3 {
+    font-size: 14px;
+  }
+  .material {
+    min-height: 55px;
+    padding: 8px 12px;
+  }
+  .material > span:last-child {
+    font-size: 12px;
+  }
+  .material strong {
+    font-size: 20px;
+  }
+  .recipes-heading > span {
+    font-size: 12px;
+  }
+  .tabs {
+    gap: 0;
+  }
+  .tabs button {
+    min-height: 48px;
+    flex: 1;
+    font-size: 13px;
+    padding: 10px 5px;
+  }
+  .recipes {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .recipe {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .recipe-category {
+    font-size: 9px;
+  }
+  .recipe h4 {
+    font-size: 16px;
+  }
+  .recipe > p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .cost {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+  .cost > span:first-child {
+    font-size: 18px;
+  }
+  .craft-button {
+    min-height: 48px;
+    font-size: 13px;
+    padding: 12px;
+  }
+  .workshop-tip {
+    display: none;
+  }
+  .reset-button {
+    min-height: 44px;
+    font-size: 12px;
+    padding: 12px 0;
+  }
+  .modal {
+    max-height: calc(100dvh - 24px - var(--safe-bottom));
+    padding: 24px;
+    overscroll-behavior: contain;
+  }
+  .modal p {
+    font-size: 14px;
+  }
+  .modal .primary-button,
+  .secondary-button {
+    min-height: 48px;
+    font-size: 14px;
+  }
+  .intro-controls {
+    font-size: 11px;
+    max-width: 100%;
+  }
+  .intro-controls kbd {
+    font-size: 10px;
+    min-width: 105px;
+  }
+  .modal small {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+}
+@media (max-width: 370px) {
+  .brand {
+    font-size: 14px;
+  }
+  .brand small,
+  .save-status {
+    display: none;
+  }
+  .touch-pad button {
+    width: 44px;
+    height: 48px;
+  }
+  .interaction {
+    width: 132px;
+  }
+  .pocket small {
+    max-width: 145px;
+    font-size: 9px;
+  }
+  .location h1 {
+    font-size: 16px;
+  }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  :root {
+    --header: 52px;
+  }
+  .location {
+    top: 10px;
+  }
+  .location .eyebrow,
+  .location p {
+    display: none;
+  }
+  .quest-panel {
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 185px;
+  }
+  .quest-panel.expanded {
+    z-index: 2;
+  }
+  .bottom-hud {
+    height: calc(52px + var(--safe-bottom));
+    background: #edf1e5eb;
+  }
+  .touch-pad {
+    bottom: calc(64px + var(--safe-bottom));
+  }
+  .interaction {
+    bottom: calc(68px + var(--safe-bottom));
+  }
+  .zoom-controls {
+    flex-direction: row;
+    top: 8px;
+  }
+  .toast {
+    bottom: calc(178px + var(--safe-bottom));
+  }
+  .workshop {
+    width: min(390px, 60vw);
+    overflow-y: auto;
+  }
+  .workshop-title {
+    flex-shrink: 0;
+  }
+  .workshop h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .inventory {
+    flex-shrink: 0;
+  }
+  .material-grid {
+    grid-template-columns: repeat(4, 1fr);
+    margin: 8px 0;
+    gap: 5px;
+  }
+  .material {
+    padding: 6px;
+    min-height: 44px;
+    gap: 3px;
+  }
+  .material-icon {
+    font-size: 20px;
+    width: 22px;
+  }
+  .material > span:last-child {
+    font-size: 8px;
+  }
+  .material strong {
+    font-size: 16px;
+  }
+  .recipes {
+    flex: none;
+    overflow: visible;
+  }
+  .tabs {
+    position: sticky;
+    top: -18px;
+    background: var(--cream);
+    z-index: 1;
+  }
+  .modal {
+    padding: 18px 24px;
+  }
+}
+
+.touch-intro {
+  display: none;
+}
+@media (max-width: 850px), (pointer: coarse) {
+  .desktop-intro {
+    display: none;
+  }
+  .touch-intro {
+    display: block;
+  }
+  .quest-panel.expanded .quest-toggle span {
+    transform: rotate(45deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workshop {
+    transition: none;
+  }
 }

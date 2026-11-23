@@ -8,7 +8,8 @@ export function createWorld(canvas, state) {
     alpha: false,
     powerPreference: "high-performance",
   });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  const touchDevice = matchMedia("(pointer: coarse)").matches;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, touchDevice ? 1.25 : 1.75));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setClearColor("#79b9bb");
@@ -20,7 +21,8 @@ export function createWorld(canvas, state) {
   const light = new THREE.DirectionalLight("#fff0cf", 3.1);
   light.position.set(-18, 30, 15);
   light.castShadow = true;
-  light.shadow.mapSize.set(2048, 2048);
+  const shadowSize = touchDevice ? 1024 : 2048;
+  light.shadow.mapSize.set(shadowSize, shadowSize);
   Object.assign(light.shadow.camera, {
     left: -32,
     right: 32,
@@ -407,10 +409,12 @@ export function createWorld(canvas, state) {
     const { width, height } = canvas.getBoundingClientRect();
     renderer.setSize(width, height, false);
     const aspect = width / height;
-    camera.left = (-zoom * aspect) / 2;
-    camera.right = (zoom * aspect) / 2;
-    camera.top = zoom / 2;
-    camera.bottom = -zoom / 2;
+    // Preserve a useful horizontal view on narrow portrait screens.
+    const verticalSpan = zoom / Math.min(1, aspect);
+    camera.left = (-verticalSpan * aspect) / 2;
+    camera.right = (verticalSpan * aspect) / 2;
+    camera.top = verticalSpan / 2;
+    camera.bottom = -verticalSpan / 2;
     camera.updateProjectionMatrix();
   }
   const observer = new ResizeObserver(resize);
@@ -428,15 +432,31 @@ export function createWorld(canvas, state) {
     if (raycaster.ray.intersectPlane(groundPlane, point))
       walkTarget = clampPosition(point.x, point.z);
   }
+  let tap = null;
   canvas.addEventListener("pointerdown", (e) => {
-    if (e.button === 0) setTarget(e.clientX, e.clientY);
+    if (e.button === 0 && e.isPrimary)
+      tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
   });
+  canvas.addEventListener("pointerup", (e) => {
+    if (
+      tap?.id === e.pointerId &&
+      Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 14
+    )
+      setTarget(e.clientX, e.clientY);
+    tap = null;
+  });
+  canvas.addEventListener("pointercancel", () => {
+    tap = null;
+  });
+  function changeZoom(delta) {
+    zoom = THREE.MathUtils.clamp(zoom + delta, 16, 36);
+    resize();
+  }
   canvas.addEventListener(
     "wheel",
     (e) => {
       e.preventDefault();
-      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.015, 16, 36);
-      resize();
+      changeZoom(e.deltaY * 0.015);
     },
     { passive: false },
   );
@@ -537,6 +557,11 @@ export function createWorld(canvas, state) {
     frame,
     nearest,
     nodes,
+    changeZoom,
+    stopWalk() {
+      walkTarget = null;
+      tap = null;
+    },
     walkTo(x, z) {
       walkTarget = clampPosition(x, z);
     },

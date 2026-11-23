@@ -10,6 +10,7 @@ import {
   gather,
 } from "./game.js";
 import { createWorld } from "./world.js";
+import { bindPress } from "./press.js";
 
 const $ = (selector) => document.querySelector(selector);
 let saved = null;
@@ -24,6 +25,39 @@ let world,
   lastGather = 0,
   saveBlocked = false;
 const keys = new Set();
+const touchKeys = new Set();
+const cancelPresses = [];
+let holdingGather = false;
+const mobileLayout = matchMedia("(max-width: 850px), (pointer: coarse)");
+let workshopOpen = false;
+function stopInput() {
+  keys.clear();
+  touchKeys.clear();
+  holdingGather = false;
+  cancelPresses.forEach((cancel) => cancel());
+  world?.stopWalk();
+}
+function setWorkshop(open, restoreFocus = true) {
+  stopInput();
+  workshopOpen = open && mobileLayout.matches;
+  const panel = $("#workshop");
+  panel.classList.toggle("mobile-open", workshopOpen);
+  panel.inert = mobileLayout.matches && !workshopOpen;
+  $("#workshop-backdrop").hidden = !workshopOpen;
+  $("#mobile-craft").setAttribute("aria-expanded", String(workshopOpen));
+  $("#play-area").inert = workshopOpen;
+  $(".topbar").inert = workshopOpen;
+  if (workshopOpen) {
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+  } else {
+    panel.removeAttribute("role");
+    panel.removeAttribute("aria-modal");
+  }
+  if (workshopOpen) $("#close-workshop").focus();
+  else if (restoreFocus && mobileLayout.matches) $("#mobile-craft").focus();
+}
+mobileLayout.addEventListener("change", () => setWorkshop(false, false));
 const dialogs = [...document.querySelectorAll("dialog")];
 const isActive = () =>
   !dialogs.some((dialog) => dialog.open) && !document.hidden && !!world;
@@ -108,7 +142,8 @@ function renderUI() {
       : "Wszystko zaczyna się od rąk";
 }
 function gatherNearest() {
-  if (!isActive() || performance.now() - lastGather < 450) return;
+  if (!isActive() || workshopOpen || performance.now() - lastGather < 450)
+    return;
   const node = world.nearest();
   if (!node) {
     notify("Podejdź bliżej drzewa, skały lub rośliny.");
@@ -137,7 +172,7 @@ $("#recipes").addEventListener("click", (event) => {
     renderUI();
     save();
     if (button.dataset.craft === "beacon") {
-      world.walkTo(0, -7);
+      stopInput();
       $("#win-dialog").showModal();
     }
   }
@@ -153,7 +188,7 @@ for (const button of document.querySelectorAll("[data-tab]"))
     renderUI();
   });
 function showDialog(id) {
-  keys.clear();
+  stopInput();
   save();
   $(id).showModal();
 }
@@ -181,11 +216,29 @@ for (const dialog of dialogs)
   dialog.addEventListener("cancel", (event) => {
     if (dialog.id === "welcome") event.preventDefault();
   });
-$("#gather").onclick = gatherNearest;
-$("#mobile-craft").onclick = () =>
-  $("#workshop").classList.toggle("mobile-open");
-$("#close-workshop").onclick = () =>
-  $("#workshop").classList.remove("mobile-open");
+cancelPresses.push(
+  bindPress($("#gather"), {
+    start() {
+      if (!isActive() || workshopOpen) return false;
+      holdingGather = true;
+      gatherNearest();
+    },
+    end() {
+      holdingGather = false;
+    },
+    activate: gatherNearest,
+  }),
+);
+$("#mobile-craft").onclick = () => setWorkshop(!workshopOpen);
+$("#close-workshop").onclick = () => setWorkshop(false);
+$("#workshop-backdrop").onclick = () => setWorkshop(false);
+$("#quest-toggle").onclick = () => {
+  const expanded = $("#quest-toggle").getAttribute("aria-expanded") !== "true";
+  $("#quest-toggle").setAttribute("aria-expanded", String(expanded));
+  $(".quest-panel").classList.toggle("expanded", expanded);
+};
+$("#zoom-in").onclick = () => world?.changeZoom(-3);
+$("#zoom-out").onclick = () => world?.changeZoom(3);
 const movementKeys = [
   "KeyW",
   "KeyA",
@@ -196,10 +249,32 @@ const movementKeys = [
   "ArrowDown",
   "ArrowRight",
   "KeyE",
-  "Space",
 ];
 window.addEventListener("keydown", (event) => {
+  if (
+    workshopOpen &&
+    !dialogs.some((dialog) => dialog.open) &&
+    event.code === "Tab"
+  ) {
+    const focusable = [
+      ...$("#workshop").querySelectorAll("button:not(:disabled)"),
+    ];
+    const first = focusable[0],
+      last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
   if (movementKeys.includes(event.code) && isActive()) event.preventDefault();
+  if (event.code === "Escape" && workshopOpen) {
+    event.preventDefault();
+    setWorkshop(false);
+    return;
+  }
   if (event.code === "Escape" && isActive()) {
     event.preventDefault();
     showDialog("#pause-dialog");
@@ -213,17 +288,17 @@ window.addEventListener("keydown", (event) => {
   )
     gatherNearest();
   if (event.code === "KeyC" && !event.repeat) {
-    $("#workshop").classList.toggle("mobile-open");
+    setWorkshop(!workshopOpen);
     $("#recipes").scrollTo({ top: 0, behavior: "smooth" });
   }
 });
 window.addEventListener("keyup", (event) => keys.delete(event.code));
 window.addEventListener("blur", () => {
-  keys.clear();
+  stopInput();
   save();
 });
 document.addEventListener("visibilitychange", () => {
-  keys.clear();
+  stopInput();
   if (document.hidden) save();
 });
 window.addEventListener("pagehide", save);
@@ -234,34 +309,31 @@ const touchDirection = {
   right: [1, 0],
 };
 for (const button of document.querySelectorAll("[data-move]")) {
-  let held = false;
-  const code = { up: "KeyW", down: "KeyS", left: "KeyA", right: "KeyD" }[
-    button.dataset.move
-  ];
-  button.addEventListener("pointerdown", (event) => {
-    if (!isActive()) return;
-    held = true;
-    button.setPointerCapture(event.pointerId);
-    keys.add(code);
-  });
-  button.addEventListener("pointerup", () => {
-    held = false;
-    keys.delete(code);
-  });
-  button.addEventListener("lostpointercapture", () => {
-    held = false;
-    keys.delete(code);
-  });
-  button.addEventListener("click", () => {
-    if (!isActive() || held) return;
-    // A tap is also a short step, so touch and keyboard activation are useful.
-    const [x, z] = touchDirection[button.dataset.move];
+  const direction = button.dataset.move;
+  const step = () => {
+    if (!isActive() || workshopOpen) return;
+    const [x, z] = touchDirection[direction];
     world.walkTo(
-      state.position.x + (x * 0.8 + z * 0.6) * 1.4,
-      state.position.z + (z * 0.8 - x * 0.6) * 1.4,
+      state.position.x + (x * 0.8 + z * 0.6) * 0.8,
+      state.position.z + (z * 0.8 - x * 0.6) * 0.8,
     );
-  });
+  };
+  cancelPresses.push(
+    bindPress(button, {
+      start() {
+        if (!isActive() || workshopOpen) return false;
+        world.stopWalk();
+        touchKeys.add(direction);
+      },
+      end({ cancelled, duration }) {
+        touchKeys.delete(direction);
+        if (!cancelled && duration < 120) step();
+      },
+      activate: step,
+    }),
+  );
 }
+setWorkshop(false, false);
 renderUI();
 try {
   world = createWorld($("#world"), state);
@@ -279,14 +351,20 @@ function tick(now) {
   const dt = Math.min((now - lastFrame) / 1000, 0.05);
   lastFrame = now;
   if (world) {
-    const active = isActive();
+    const active = isActive() && !workshopOpen;
     const movement = {
       x:
-        Number(keys.has("KeyD") || keys.has("ArrowRight")) -
-        Number(keys.has("KeyA") || keys.has("ArrowLeft")),
+        Number(
+          keys.has("KeyD") || keys.has("ArrowRight") || touchKeys.has("right"),
+        ) -
+        Number(
+          keys.has("KeyA") || keys.has("ArrowLeft") || touchKeys.has("left"),
+        ),
       z:
-        Number(keys.has("KeyS") || keys.has("ArrowDown")) -
-        Number(keys.has("KeyW") || keys.has("ArrowUp")),
+        Number(
+          keys.has("KeyS") || keys.has("ArrowDown") || touchKeys.has("down"),
+        ) -
+        Number(keys.has("KeyW") || keys.has("ArrowUp") || touchKeys.has("up")),
     };
     const target = world.frame(
       dt,
@@ -295,6 +373,7 @@ function tick(now) {
       active,
     );
     if (active) {
+      if (holdingGather) gatherNearest();
       state.elapsed += dt;
       saveTime += dt;
       if (saveTime > 12) {
