@@ -20,7 +20,19 @@
   <body>
     <header class="topbar">
       <a class="brand" href="./" aria-label="Żar Wyspy — strona główna"
-        ><span class="brand-mark">◈</span
+        ><span class="brand-mark"
+          ><svg
+            viewBox="0 0 32 40"
+            width="1em"
+            height="1em"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path
+              d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z"
+            /></svg></span
         ><span>ŻAR WYSPY<small>MAŁA WYSPA. WIELKA PRZYGODA.</small></span></a
       >
       <div class="world-label">
@@ -36,7 +48,7 @@
         >
           ?</button
         ><button id="pause" class="icon-button" aria-label="Wstrzymaj grę">
-          Ⅱ
+          II
         </button>
       </div>
     </header>
@@ -67,7 +79,19 @@
         </section>
         <div class="compass" aria-hidden="true">
           <span>N</span>
-          <div>✧</div>
+          <div>
+            <svg
+              viewBox="0 0 32 40"
+              width="1em"
+              height="1em"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z" />
+            </svg>
+          </div>
         </div>
         <div class="island-caption" aria-hidden="true">
           PRZYSTAŃ ROZBITKA <span>—</span> 04° N · 18° E
@@ -76,12 +100,25 @@
         <div class="interaction">
           <button id="gather" class="gather-button">
             <kbd>E</kbd><span id="gather-label">Podejdź do surowca</span
-            ><span class="action-arrow">↗</span></button
+            ><span class="action-arrow">→</span></button
           ><span id="target-hint">Drzewa · skały · rośliny · kryształy</span>
         </div>
         <div class="bottom-hud">
           <div class="pocket">
-            <span class="avatar">♙</span
+            <span class="avatar"
+              ><svg
+                viewBox="0 0 32 36"
+                width="1em"
+                height="1em"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="16" cy="10" r="5" />
+                <path
+                  d="M6 32v-9a10 10 0 0 1 20 0v9zM10 4h12M8 27h16"
+                /></svg></span
             ><span
               >Odkrywca<small id="tool-label"
                 >Wszystko zaczyna się od rąk</small
@@ -116,7 +153,7 @@
         <div class="workshop-title">
           <div>
             <span class="eyebrow">ZBUDUJ COŚ SWOJEGO</span>
-            <h2>Warsztat<span>⚒</span></h2>
+            <h2>Warsztat<span aria-hidden="true">/</span></h2>
           </div>
           <button
             id="close-workshop"
@@ -153,19 +190,44 @@
           aria-label="Dostępne receptury"
         ></div>
         <div class="workshop-tip">
-          <span>✦</span>
+          <span
+            ><svg
+              viewBox="0 0 32 40"
+              width="1em"
+              height="1em"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z"
+              /></svg
+          ></span>
           <p>
             Nie musisz się spieszyć.<br /><strong
               >Każda wyprawa zaczyna się od gałęzi.</strong
             >
           </p>
         </div>
-        <button id="reset" class="reset-button">Nowa wyprawa ↗</button>
+        <button id="reset" class="reset-button">Nowa wyprawa →</button>
       </aside>
     </main>
 
     <dialog id="welcome" class="modal">
-      <div class="modal-mark">◈</div>
+      <div class="modal-mark">
+        <svg
+          viewBox="0 0 32 40"
+          width="1em"
+          height="1em"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z" />
+        </svg>
+      </div>
       <span class="eyebrow">WITAJ NA SWOJEJ WYSPIE</span>
       <h2>Rozpal początek<br />nowej przygody.</h2>
       <p>
@@ -179,7 +241,7 @@
         ><span><kbd>kliknięcie wyspy</kbd> podejdź do miejsca</span>
       </div>
       <button id="start" class="primary-button">
-        Zacznij wyprawę <span>↗</span></button
+        Zacznij wyprawę <span>→</span></button
       ><small>Bez logowania · Postęp zapisuje się w tej przeglądarce</small>
     </dialog>
     <dialog id="help-dialog" class="modal compact">
@@ -201,7 +263,7 @@
         warsztat na telefonie, <b>Esc</b> pauzuje grę.
       </p>
       <button class="primary-button" data-close="help-dialog">
-        Wracam na wyspę ↗
+        Wracam na wyspę →
       </button>
     </dialog>
     <dialog id="pause-dialog" class="modal compact">
@@ -212,7 +274,7 @@
         pozwala na zapis lokalny.
       </p>
       <button class="primary-button" data-close="pause-dialog">
-        Kontynuuj wyprawę ↗
+        Kontynuuj wyprawę →
       </button>
     </dialog>
     <dialog id="reset-dialog" class="modal compact">
@@ -220,13 +282,25 @@
       <h2>Jeszcze jedna wyspa?</h2>
       <p>Rozpoczęcie nowej wyprawy usunie bieżący postęp z tej przeglądarki.</p>
       <button id="confirm-reset" class="primary-button">
-        Rozpocznij od nowa ↗</button
+        Rozpocznij od nowa →</button
       ><button class="secondary-button" data-close="reset-dialog">
         Zostaję na tej wyspie
       </button>
     </dialog>
     <dialog id="win-dialog" class="modal">
-      <div class="modal-mark">✧</div>
+      <div class="modal-mark">
+        <svg
+          viewBox="0 0 32 40"
+          width="1em"
+          height="1em"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z" />
+        </svg>
+      </div>
       <span class="eyebrow">ŚWIATŁO DOTARŁO ZA HORYZONT</span>
       <h2>Mały płomień.<br />Wielka historia.</h2>
       <p>
@@ -234,7 +308,7 @@
         nadal należy do ciebie. Możesz zostać i dalej odkrywać jej zakątki.
       </p>
       <button class="primary-button" data-close="win-dialog">
-        Zostaję na dłużej ↗
+        Zostaję na dłużej →
       </button>
     </dialog>
     <script type="module" src="/src/main.js"></script>

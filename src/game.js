@@ -1,16 +1,18 @@
+import { ICONS } from "./icons.js";
+
 export const SAVE_KEY = "ember-island-v1";
 export const MATERIALS = {
-  wood: { name: "Drewno", icon: "♧", color: "#dca56f" },
-  stone: { name: "Kamień", icon: "⬡", color: "#bcc5ce" },
-  fiber: { name: "Włókno", icon: "≋", color: "#a9c888" },
-  crystal: { name: "Kryształ", icon: "◇", color: "#8bdad0" },
+  wood: { name: "Drewno", icon: ICONS.wood, color: "#dca56f" },
+  stone: { name: "Kamień", icon: ICONS.stone, color: "#bcc5ce" },
+  fiber: { name: "Włókno", icon: ICONS.fiber, color: "#a9c888" },
+  crystal: { name: "Kryształ", icon: ICONS.crystal, color: "#8bdad0" },
 };
 export const RECIPES = [
   {
     id: "axe",
     name: "Kamienna siekiera",
     category: "tools",
-    icon: "⚒",
+    icon: ICONS.axe,
     description: "Dwa razy więcej drewna przy każdym uderzeniu.",
     cost: { wood: 4, stone: 2, fiber: 2 },
   },
@@ -18,7 +20,7 @@ export const RECIPES = [
     id: "pickaxe",
     name: "Kamienny kilof",
     category: "tools",
-    icon: "⛏",
+    icon: ICONS.pickaxe,
     description: "Wydobywaj kryształy i sprawniej rozbijaj skały.",
     cost: { wood: 4, stone: 4 },
   },
@@ -26,7 +28,7 @@ export const RECIPES = [
     id: "campfire",
     name: "Ognisko",
     category: "camp",
-    icon: "♨",
+    icon: ICONS.campfire,
     description: "Pierwszy płomień. Początek twojego obozu.",
     cost: { wood: 6, stone: 4 },
   },
@@ -34,7 +36,7 @@ export const RECIPES = [
     id: "beacon",
     name: "Latarnia ratunkowa",
     category: "camp",
-    icon: "✧",
+    icon: ICONS.beacon,
     description: "Rozświetl horyzont i ukończ swoją wyprawę.",
     cost: { wood: 10, stone: 8, crystal: 4 },
     requires: ["campfire", "pickaxe"],
