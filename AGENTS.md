@@ -13,9 +13,10 @@
 ### Indeks doboru
 | Rodzaj zadania | Skill do odczytania |
 | --- | --- |
-| Implementacja, naprawa błędu, refaktoryzacja | `.agents/skills/focused-coding/SKILL.md` |
+| Nowa aplikacja, gra lub samodzielny projekt | Najpierw `.agents/skills/project-planning/SKILL.md`; dopiero po przedstawieniu planu i rozstrzygnięciu blokerów `.agents/skills/focused-coding/SKILL.md` przy kodowaniu |
+| Implementacja, naprawa błędu, refaktoryzacja istniejącego projektu | `.agents/skills/focused-coding/SKILL.md` |
 | Audyt bezpieczeństwa, analiza podatności, autoryzowane testy | `.agents/skills/security-audit/SKILL.md` |
-| Implementacja zatwierdzonej naprawy bezpieczeństwa | Oba powyższe skille |
+| Implementacja zatwierdzonej naprawy bezpieczeństwa | `security-audit` oraz `focused-coding` z katalogu `.agents/skills/` |
 | Inne zadanie | Sprawdź opisy dostępnych skilli; nie wymuszaj niepasującego |
 
 Zasady bieżącego sprawdzania błędów zapisane poniżej obowiązują przy kodowaniu niezależnie od wyboru skilla. Ten indeks jest punktem startowym; uwzględniaj też nowe skille znalezione w katalogu.
