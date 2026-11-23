@@ -25,5 +25,9 @@
 - Podsumuj, co zmieniono, jakie kontrole wykonano i z jakim wynikiem. Wymień blokery oraz elementy niezweryfikowane.
 - Sam udany build lub status READY deploymentu nie dowodzą poprawności działania aplikacji.
 
+## Skill audytu bezpieczeństwa
+- Przy zadaniach dotyczących audytu bezpieczeństwa, podatności lub autoryzowanych testów odczytaj `.agents/skills/security-audit/SKILL.md` i stosuj opisany tam proces.
+- Samo dodanie skilla nie oznacza zgody na aktywne testowanie infrastruktury. Najpierw ustal zakres i upoważnienie.
+
 ## Stosowanie
 Te instrukcje dotyczą pracy nad całym repozytorium. Nie nadają dodatkowych uprawnień i nie uruchamiają samodzielnego monitorowania w tle. Agent powinien odczytać ten plik przy rozpoczynaniu pracy; automatyczne ładowanie zależy od używanego narzędzia.
