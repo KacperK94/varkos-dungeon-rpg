@@ -17,6 +17,8 @@ Prośba o stworzenie samego skilla, audyt lub małą poprawkę nie oznacza rozpo
 - Nie przedstawiaj nieznanych budżetów, terminów, integracji ani możliwości platformy jako ustalonych faktów.
 
 ## 2. Opisz aplikację lub grę
+Przed wyborem koncepcji odczytaj `.agents/skills/originality-research/SKILL.md`. W ramach planowania wykonaj opisane tam rozeznanie rynku i opracuj świeży kierunek bez używania poprzednich projektów jako wzorców. Przedstaw źródła, ograniczenia danych oraz konkretne wyróżniki; włącz wnioski do opisu, własnej oceny i ponownej analizy. Nie kopiuj konkurentów i nie zmieniaj uzgodnionego zakresu bez zgody.
+
 Przygotuj zrozumiały opis ogólny obejmujący:
 - Do czego służy projekt i dla kogo powstaje.
 - Główną ścieżkę użytkownika albo pętlę rozgrywki.
