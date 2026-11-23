@@ -1295,3 +1295,30 @@ kbd {
     transition: none !important;
   }
 }
+.material-icon svg,
+.recipe-icon svg {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+.cost > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.brand-mark svg {
+  width: 0.7em;
+  height: 1em;
+  display: block;
+}
+.compass svg {
+  width: 0.65em;
+  height: 1em;
+}
+.workshop-tip > span svg {
+  display: block;
+  width: 0.65em;
+}
+.modal-mark svg {
+  height: 1em;
+}

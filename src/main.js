@@ -30,7 +30,7 @@ const isActive = () =>
 function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    $("#save-status").textContent = "✓ Zapisano lokalnie";
+    $("#save-status").textContent = "Zapisano lokalnie";
     saveBlocked = false;
   } catch {
     $("#save-status").textContent = "Zapis niedostępny";
@@ -62,7 +62,7 @@ function renderUI() {
     .map((recipe) => {
       const done = state.crafted.includes(recipe.id);
       const reason = craftReason(state, recipe);
-      return `<article class="recipe ${done ? "done" : ""}"><div class="recipe-head"><span class="recipe-icon ${recipe.id}">${recipe.icon}</span><div><span class="recipe-category">${recipe.category === "tools" ? "NARZĘDZIE" : "BUDOWLA"}</span><h4>${recipe.name}</h4></div>${done ? '<span class="done-check">✓</span>' : ""}</div><p>${recipe.description}</p><div class="costs">${Object.entries(
+      return `<article class="recipe ${done ? "done" : ""}"><div class="recipe-head"><span class="recipe-icon ${recipe.id}">${recipe.icon}</span><div><span class="recipe-category">${recipe.category === "tools" ? "NARZĘDZIE" : "BUDOWLA"}</span><h4>${recipe.name}</h4></div>${done ? '<span class="done-check">+</span>' : ""}</div><p>${recipe.description}</p><div class="costs">${Object.entries(
         recipe.cost,
       )
         .map(
@@ -71,7 +71,7 @@ function renderUI() {
         )
         .join(
           "",
-        )}</div><button class="craft-button" data-craft="${recipe.id}" ${reason ? "disabled" : ""} title="${reason || "Wytwórz przedmiot"}">${done ? "✓ W ekwipunku" : reason === "Wymaga ogniska i kilofa" ? "Najpierw ognisko i kilof" : reason ? "Brakuje surowców" : "Wytwórz"}<span>${done ? "" : "↗"}</span><span class="sr-only"> — ${recipe.name}</span></button></article>`;
+        )}</div><button class="craft-button" data-craft="${recipe.id}" ${reason ? "disabled" : ""} title="${reason || "Wytwórz przedmiot"}">${done ? "W ekwipunku" : reason === "Wymaga ogniska i kilofa" ? "Najpierw ognisko i kilof" : reason ? "Brakuje surowców" : "Wytwórz"}<span>${done ? "" : "→"}</span><span class="sr-only"> — ${recipe.name}</span></button></article>`;
     })
     .join("");
   const quests = [
@@ -95,7 +95,7 @@ function renderUI() {
   $("#quests").innerHTML = quests
     .map(
       (q, i) =>
-        `<li class="${q.done ? "complete" : ""}"><span class="quest-number">${q.done ? "✓" : "0" + (i + 1)}</span><div><strong>${q.title}</strong><small>${q.detail}</small></div></li>`,
+        `<li class="${q.done ? "complete" : ""}"><span class="quest-number">${q.done ? "+" : "0" + (i + 1)}</span><div><strong>${q.title}</strong><small>${q.detail}</small></div></li>`,
     )
     .join("");
   $("#quest-count").textContent = `${count} / 3`;
@@ -176,7 +176,7 @@ $("#start").onclick = () => {
 };
 for (const button of document.querySelectorAll("[data-close]"))
   button.onclick = () => $(`#${button.dataset.close}`).close();
-// Do not let Escape silently dismiss the introduction or reset confirmation.
+// Keep the introduction open until the player explicitly starts.
 for (const dialog of dialogs)
   dialog.addEventListener("cancel", (event) => {
     if (dialog.id === "welcome") event.preventDefault();
