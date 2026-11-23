@@ -1,8 +1,24 @@
 # Instrukcje dla agentów pracujących nad repozytorium
 
-## Skill skupionej pracy
-- Przed implementacją, naprawą błędu lub refaktoryzacją odczytaj `.agents/skills/focused-coding/SKILL.md` i stosuj opisany tam proces.
-- Realizuj jeden spójny cel, sprawdzaj błędy po małych zmianach i wracaj do kryteriów ukończenia po zmianie podejścia.
+## Początek sesji i automatyczny dobór skilli
+- Na początku każdej sesji pracy nad tym repozytorium odczytaj aktualny `AGENTS.md`. Po wznowieniu pracy lub utracie kontekstu upewnij się, że znasz obowiązujące instrukcje.
+- Przed pierwszą czynnością dotyczącą zadania przejrzyj pola `name` i `description` w plikach `.agents/skills/*/SKILL.md`. Powtórz dobór, gdy użytkownik zmieni zadanie lub zakres prac.
+- Samodzielnie dobierz najmniejszy zestaw skilli odpowiadający celowi zadania. Nie wymagaj od użytkownika podawania ich nazw ani osobnej prośby o aktywację.
+- Przed zastosowaniem wybranego skilla przeczytaj cały jego `SKILL.md` i potrzebne załączniki. Nie wczytuj pełnej treści wszystkich skilli bez potrzeby.
+- Jeżeli pasuje kilka skilli, połącz ich procesy: najpierw ustal zakres i upoważnienie, potem wykonuj pracę i weryfikuj wynik. Instrukcje nadrzędne i bardziej szczegółowe instrukcje katalogów zachowują pierwszeństwo.
+- Dobór skilla nie upoważnia do edycji, publikacji, wdrożenia ani aktywnych testów. Nadal przestrzegaj zakresu prośby oraz wymaganych zgód.
+- Jeżeli skill jest niedostępny lub jego opis nie pasuje do zadania, nie udawaj jego zastosowania. Wskaż istotne ograniczenie i kontynuuj tylko pracę możliwą bez niego.
+- Przy dodawaniu nowego skilla umieść go w `.agents/skills/<nazwa>/SKILL.md`, podaj konkretne warunki użycia w `description` i zaktualizuj poniższy indeks.
+
+### Indeks doboru
+| Rodzaj zadania | Skill do odczytania |
+| --- | --- |
+| Implementacja, naprawa błędu, refaktoryzacja | `.agents/skills/focused-coding/SKILL.md` |
+| Audyt bezpieczeństwa, analiza podatności, autoryzowane testy | `.agents/skills/security-audit/SKILL.md` |
+| Implementacja zatwierdzonej naprawy bezpieczeństwa | Oba powyższe skille |
+| Inne zadanie | Sprawdź opisy dostępnych skilli; nie wymuszaj niepasującego |
+
+Zasady bieżącego sprawdzania błędów zapisane poniżej obowiązują przy kodowaniu niezależnie od wyboru skilla. Ten indeks jest punktem startowym; uwzględniaj też nowe skille znalezione w katalogu.
 
 ## Skupienie i zakres
 - Przed edycją określ oczekiwany rezultat i sprawdzalne kryteria ukończenia.
