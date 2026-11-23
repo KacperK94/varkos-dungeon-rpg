@@ -1,5 +1,9 @@
 # Instrukcje dla agentów pracujących nad repozytorium
 
+## Skill skupionej pracy
+- Przed implementacją, naprawą błędu lub refaktoryzacją odczytaj `.agents/skills/focused-coding/SKILL.md` i stosuj opisany tam proces.
+- Realizuj jeden spójny cel, sprawdzaj błędy po małych zmianach i wracaj do kryteriów ukończenia po zmianie podejścia.
+
 ## Skupienie i zakres
 - Przed edycją określ oczekiwany rezultat i sprawdzalne kryteria ukończenia.
 - Przeczytaj powiązany kod, dokumentację i instrukcje dotyczące zmienianych katalogów.
