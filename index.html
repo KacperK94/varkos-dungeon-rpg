@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#263b34" />
+    <meta
+      name="description"
+      content="Żar Wyspy — kameralna gra 3D o eksploracji, zbieraniu surowców i budowie własnego obozu."
+    />
+    <title>Żar Wyspy — mała wyspa, wielka przygoda</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='20' fill='%23263b34'/%3E%3Cpath d='M40 12L62 44 40 68 18 44Z' fill='%23e6bc7e'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Żar Wyspy — strona główna"
+        ><span class="brand-mark">◈</span
+        ><span>ŻAR WYSPY<small>MAŁA WYSPA. WIELKA PRZYGODA.</small></span></a
+      >
+      <div class="world-label">
+        <span class="live-dot"></span> TWOJA WŁASNA PRZYSTAŃ
+        <span class="tag">PROTOTYP 01</span>
+      </div>
+      <div class="top-actions">
+        <span id="save-status" class="save-status">Zapis lokalny</span
+        ><button
+          id="help"
+          class="icon-button"
+          aria-label="Instrukcja sterowania"
+        >
+          ?</button
+        ><button id="pause" class="icon-button" aria-label="Wstrzymaj grę">
+          Ⅱ
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="viewport" aria-label="Świat gry 3D">
+        <canvas
+          id="world"
+          aria-label="Wyspa 3D. Poruszaj się WASD, strzałkami lub kliknij miejsce. E zbiera pobliski surowiec."
+        ></canvas>
+        <div class="location">
+          <span class="eyebrow">ARCHIPELAG SPOKOJU</span>
+          <h1>Wyspa Pierwszego Żaru<span>01</span></h1>
+          <p>
+            <span class="sun">☀</span> Pogodny dzień
+            <span class="separator">/</span> <span id="day">Dzień 1</span>
+          </p>
+        </div>
+        <section class="quest-panel" aria-label="Cele wyprawy">
+          <span class="eyebrow">TWOJA WYPRAWA</span>
+          <h2>Światło na horyzoncie</h2>
+          <p>Z małych rzeczy powstaje dom.</p>
+          <ol id="quests"></ol>
+          <div class="quest-progress"><span id="quest-bar"></span></div>
+          <div class="quest-footer">
+            <span id="quest-count">0 / 3</span><span>kroków do celu</span>
+          </div>
+        </section>
+        <div class="compass" aria-hidden="true">
+          <span>N</span>
+          <div>✧</div>
+        </div>
+        <div class="island-caption" aria-hidden="true">
+          PRZYSTAŃ ROZBITKA <span>—</span> 04° N · 18° E
+        </div>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        <div class="interaction">
+          <button id="gather" class="gather-button">
+            <kbd>E</kbd><span id="gather-label">Podejdź do surowca</span
+            ><span class="action-arrow">↗</span></button
+          ><span id="target-hint">Drzewa · skały · rośliny · kryształy</span>
+        </div>
+        <div class="bottom-hud">
+          <div class="pocket">
+            <span class="avatar">♙</span
+            ><span
+              >Odkrywca<small id="tool-label"
+                >Wszystko zaczyna się od rąk</small
+              ></span
+            >
+          </div>
+          <div class="key-guide">
+            <span><kbd>W A S D</kbd> ruch</span><span><kbd>E</kbd> zbieraj</span
+            ><span><kbd>C</kbd> crafting</span
+            ><span class="click-guide">kliknij, aby podejść</span>
+          </div>
+          <button id="mobile-craft" class="mobile-craft">⚒ Warsztat</button>
+        </div>
+        <nav class="touch-pad" aria-label="Sterowanie ruchem">
+          <button data-move="up" aria-label="Idź w górę">↑</button>
+          <div>
+            <button data-move="left" aria-label="Idź w lewo">←</button
+            ><button data-move="down" aria-label="Idź w dół">↓</button
+            ><button data-move="right" aria-label="Idź w prawo">→</button>
+          </div>
+        </nav>
+        <div id="error" class="error-panel" hidden>
+          <h2>Nie można uruchomić sceny 3D</h2>
+          <p>
+            Ta gra wymaga WebGL 2. Spróbuj włączyć akcelerację sprzętową lub
+            użyj nowszej przeglądarki.
+          </p>
+        </div>
+      </section>
+
+      <aside class="workshop" id="workshop" aria-label="Warsztat craftingu">
+        <div class="workshop-title">
+          <div>
+            <span class="eyebrow">ZBUDUJ COŚ SWOJEGO</span>
+            <h2>Warsztat<span>⚒</span></h2>
+          </div>
+          <button
+            id="close-workshop"
+            class="icon-button"
+            aria-label="Zamknij warsztat"
+          >
+            ×
+          </button>
+        </div>
+        <section class="inventory" aria-label="Ekwipunek">
+          <div class="section-heading">
+            <h3>Twój plecak</h3>
+            <span>SUROWCE</span>
+          </div>
+          <div class="material-grid" id="inventory"></div>
+        </section>
+        <div class="recipes-heading">
+          <h3>Receptury</h3>
+          <span id="crafted-count">0 / 4</span>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Kategorie receptur">
+          <button role="tab" aria-selected="true" data-tab="all">
+            Wszystko</button
+          ><button role="tab" aria-selected="false" data-tab="tools">
+            Narzędzia</button
+          ><button role="tab" aria-selected="false" data-tab="camp">
+            Obóz
+          </button>
+        </div>
+        <div
+          id="recipes"
+          class="recipes"
+          role="region"
+          aria-label="Dostępne receptury"
+        ></div>
+        <div class="workshop-tip">
+          <span>✦</span>
+          <p>
+            Nie musisz się spieszyć.<br /><strong
+              >Każda wyprawa zaczyna się od gałęzi.</strong
+            >
+          </p>
+        </div>
+        <button id="reset" class="reset-button">Nowa wyprawa ↗</button>
+      </aside>
+    </main>
+
+    <dialog id="welcome" class="modal">
+      <div class="modal-mark">◈</div>
+      <span class="eyebrow">WITAJ NA SWOJEJ WYSPIE</span>
+      <h2>Rozpal początek<br />nowej przygody.</h2>
+      <p>
+        Ocean wyrzucił cię na nieznany brzeg. Zbierz to, co daje wyspa. Stwórz
+        narzędzia, rozpal ognisko i wznieś latarnię, której światło dotrze za
+        horyzont.
+      </p>
+      <div class="intro-controls">
+        <span><kbd>WASD / strzałki</kbd> poruszanie</span
+        ><span><kbd>E</kbd> zbieranie surowców</span
+        ><span><kbd>kliknięcie wyspy</kbd> podejdź do miejsca</span>
+      </div>
+      <button id="start" class="primary-button">
+        Zacznij wyprawę <span>↗</span></button
+      ><small>Bez logowania · Postęp zapisuje się w tej przeglądarce</small>
+    </dialog>
+    <dialog id="help-dialog" class="modal compact">
+      <span class="eyebrow">PORADNIK ODKRYWCY</span>
+      <h2>Rozejrzyj się.</h2>
+      <p>
+        Poruszaj się klawiszami <b>WASD</b>, strzałkami lub kliknij miejsce na
+        wyspie. Przytrzymaj <b>Shift</b>, aby biec. Kółko myszy zmienia
+        przybliżenie.
+      </p>
+      <p>
+        Podejdź do drzewa, skały lub rośliny i naciśnij <b>E</b> albo przycisk
+        zbierania. Jasny pierścień wskazuje cel. Do kryształów potrzebujesz
+        kilofa.
+      </p>
+      <p>
+        W warsztacie zamienisz surowce na przedmioty. Ognisko i latarnia
+        pojawiają się w ustalonych miejscach na wyspie. <b>C</b> otwiera
+        warsztat na telefonie, <b>Esc</b> pauzuje grę.
+      </p>
+      <button class="primary-button" data-close="help-dialog">
+        Wracam na wyspę ↗
+      </button>
+    </dialog>
+    <dialog id="pause-dialog" class="modal compact">
+      <span class="eyebrow">CHWILA SPOKOJU</span>
+      <h2>Wyspa poczeka.</h2>
+      <p>
+        Gra jest wstrzymana. Twój postęp został zapisany, jeśli przeglądarka
+        pozwala na zapis lokalny.
+      </p>
+      <button class="primary-button" data-close="pause-dialog">
+        Kontynuuj wyprawę ↗
+      </button>
+    </dialog>
+    <dialog id="reset-dialog" class="modal compact">
+      <span class="eyebrow">NOWY POCZĄTEK</span>
+      <h2>Jeszcze jedna wyspa?</h2>
+      <p>Rozpoczęcie nowej wyprawy usunie bieżący postęp z tej przeglądarki.</p>
+      <button id="confirm-reset" class="primary-button">
+        Rozpocznij od nowa ↗</button
+      ><button class="secondary-button" data-close="reset-dialog">
+        Zostaję na tej wyspie
+      </button>
+    </dialog>
+    <dialog id="win-dialog" class="modal">
+      <div class="modal-mark">✧</div>
+      <span class="eyebrow">ŚWIATŁO DOTARŁO ZA HORYZONT</span>
+      <h2>Mały płomień.<br />Wielka historia.</h2>
+      <p>
+        Twoja latarnia rozświetliła archipelag. Wyprawa zakończona — ale wyspa
+        nadal należy do ciebie. Możesz zostać i dalej odkrywać jej zakątki.
+      </p>
+      <button class="primary-button" data-close="win-dialog">
+        Zostaję na dłużej ↗
+      </button>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
