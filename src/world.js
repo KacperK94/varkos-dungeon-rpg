@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { clampPosition } from "./game.js";
 import { bindCameraGestures, clampZoom } from "./camera-gestures.js";
+import { renderQuality, applyRenderQuality } from "./render-quality.js";
 
 export function createWorld(canvas, state) {
   const renderer = new THREE.WebGLRenderer({
@@ -406,8 +407,30 @@ export function createWorld(canvas, state) {
   const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.27);
   const cameraTarget = new THREE.Vector3(0, 0, 2);
   let walkTarget = null;
+  let qualityTimer;
+  function updateQuality() {
+    const { width, height } = canvas.getBoundingClientRect();
+    if (width <= 0 || height <= 0) return;
+    applyRenderQuality(
+      renderer,
+      light,
+      renderQuality({
+        zoom,
+        width,
+        height,
+        deviceRatio: devicePixelRatio,
+        touchDevice,
+      }),
+    );
+  }
+  function scheduleQuality() {
+    clearTimeout(qualityTimer);
+    // Finish the gesture before reallocating high-resolution render targets.
+    qualityTimer = setTimeout(updateQuality, 180);
+  }
   function resize() {
     const { width, height } = canvas.getBoundingClientRect();
+    if (width <= 0 || height <= 0) return;
     renderer.setSize(width, height, false);
     const aspect = width / height;
     // Preserve a useful horizontal view on narrow portrait screens.
@@ -417,6 +440,7 @@ export function createWorld(canvas, state) {
     camera.top = verticalSpan / 2;
     camera.bottom = -verticalSpan / 2;
     camera.updateProjectionMatrix();
+    scheduleQuality();
   }
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
@@ -566,6 +590,7 @@ export function createWorld(canvas, state) {
         node.group.visible = (state.depleted[node.id] || 0) < node.hits;
     },
     dispose() {
+      clearTimeout(qualityTimer);
       cameraGestures.dispose();
       observer.disconnect();
       renderer.dispose();
