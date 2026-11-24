@@ -1820,3 +1820,197 @@ button {
     transition: none;
   }
 }
+
+/* Preferences are explicit: a new player sees no directional overlay. */
+body:not(.arrow-controls) .touch-pad {
+  display: none;
+}
+body.arrow-controls .touch-pad {
+  display: flex;
+}
+body.arrow-controls .touch-pad button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.settings-gear {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.control-hint {
+  position: absolute;
+  bottom: 185px;
+  left: 24px;
+  padding: 9px 12px;
+  background: #f7f3e8d9;
+  border-radius: 8px;
+  font-size: 11px;
+  pointer-events: none;
+  color: #405d44;
+}
+.settings-modal {
+  width: min(510px, calc(100vw - 24px));
+  padding: 24px;
+  text-align: left;
+}
+.settings-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.settings-heading h2 {
+  margin: 8px 0 20px;
+  font-size: 29px;
+}
+.settings-heading .icon-button {
+  min-width: 44px;
+  height: 44px;
+  font-size: 24px;
+}
+.settings-modal fieldset {
+  margin: 0 0 18px;
+  border: 1px solid #d7ddcb;
+  border-radius: 10px;
+  padding: 14px;
+  min-width: 0;
+}
+.settings-modal legend {
+  padding: 0 7px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.settings-modal label {
+  font-size: 13px;
+}
+.setting-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 7px 0;
+  cursor: pointer;
+}
+.setting-choice small {
+  display: block;
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.settings-modal input[type="radio"],
+.settings-modal input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: #527357;
+}
+.settings-modal p {
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+.settings-modal select {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  border: 1px solid #bdc9b4;
+  border-radius: 7px;
+  padding: 8px;
+  background: #f7f5ec;
+  color: #344d39;
+  font: inherit;
+  font-size: 13px;
+}
+.volume-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+}
+.volume-label output {
+  font-variant-numeric: tabular-nums;
+  color: #65815d;
+}
+.settings-modal input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  accent-color: #527357;
+  touch-action: pan-y;
+}
+.settings-modal .secondary-button {
+  min-height: 44px;
+  font-size: 12px;
+}
+#settings-status {
+  margin-bottom: 12px;
+}
+@media (max-width: 850px), (pointer: coarse) {
+  .top-actions .save-status {
+    display: none;
+  }
+  .control-hint {
+    left: max(14px, var(--safe-left));
+    bottom: calc(150px + var(--safe-bottom));
+    max-width: 145px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  body.arrow-controls .control-hint {
+    display: none;
+  }
+  .settings-modal {
+    max-height: calc(100dvh - 20px - env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 370px) {
+  .topbar {
+    gap: 6px;
+  }
+  .top-actions {
+    gap: 3px;
+  }
+  .top-actions .icon-button {
+    min-width: 40px;
+    width: 40px;
+  }
+  .brand {
+    gap: 4px;
+    font-size: 12px;
+  }
+  .brand-mark {
+    font-size: 26px;
+  }
+}
+
+@media (min-width: 851px) and (pointer: fine) {
+  body.arrow-controls .touch-pad {
+    position: absolute;
+    left: 24px;
+    bottom: 100px;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+  body.arrow-controls .touch-pad div {
+    display: flex;
+    gap: 6px;
+  }
+  body.arrow-controls .touch-pad button {
+    width: 48px;
+    height: 48px;
+    border: 1px solid #edf2dcaa;
+    border-radius: 10px;
+    background: #f7f3e8df;
+    font-size: 22px;
+    touch-action: none;
+  }
+  body.arrow-controls .touch-pad button.pressed {
+    background: #cfdfb6;
+  }
+  body.arrow-controls .control-hint {
+    display: none;
+  }
+}

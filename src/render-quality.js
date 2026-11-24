@@ -6,7 +6,19 @@ export function renderQuality({
   height,
   deviceRatio,
   touchDevice,
+  graphics = "auto",
 }) {
+  if (graphics === "low" || graphics === "medium") {
+    const budget = graphics === "low" ? 1_000_000 : 2_000_000;
+    return {
+      pixelRatio: Math.min(
+        deviceRatio,
+        graphics === "low" ? 1 : 1.25,
+        Math.sqrt(budget / Math.max(1, width * height)),
+      ),
+      shadowSize: 1024,
+    };
+  }
   const close = Math.max(0, Math.min(1, (24 - clampZoom(zoom)) / 8));
   // Four discrete tiers avoid reallocating the framebuffer on every pinch move.
   const tier = Math.floor(close * 3 + 1e-6);
