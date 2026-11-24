@@ -40,7 +40,28 @@
         <span class="tag">PROTOTYP 01</span>
       </div>
       <div class="top-actions">
-        <span id="save-status" class="save-status">Zapis lokalny</span
+        <button
+          id="settings-button"
+          class="icon-button settings-gear"
+          aria-label="Ustawienia gry"
+          aria-haspopup="dialog"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            aria-hidden="true"
+          >
+            <path
+              d="m9 3 1-2h4l1 2 2 1 2 0 2 3-1 2v3l1 2-2 3h-2l-2 1-1 3h-4l-1-3-2-1H5l-2-3 1-2V9L3 7l2-3h2z"
+              transform="translate(0 1) scale(1 .95)"
+            />
+            <circle cx="12" cy="12" r="3" />
+          </svg></button
+        ><span id="save-status" class="save-status">Zapis lokalny</span
         ><button
           id="help"
           class="icon-button"
@@ -111,6 +132,7 @@
           PRZYSTAŃ ROZBITKA <span>—</span> 04° N · 18° E
         </div>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        <p id="control-hint" class="control-hint">Dotknij wyspy, aby podejść</p>
         <div class="interaction">
           <button id="gather" class="gather-button">
             <kbd>E</kbd><span id="gather-label">Podejdź do surowca</span
@@ -265,7 +287,7 @@
       </p>
       <div class="intro-controls">
         <span class="touch-intro"
-          ><kbd>lewe strzałki</kbd> przytrzymaj, aby iść</span
+          ><kbd>dotknij wyspy</kbd> postać sama podejdzie</span
         >
         <span class="touch-intro"
           ><kbd>przycisk Zbierz</kbd> przytrzymaj, aby zbierać</span
@@ -290,8 +312,10 @@
       <p>
         Podejdź do drzewa, skały lub rośliny i naciśnij <b>E</b> albo przycisk
         zbierania. Na telefonie przytrzymaj duży przycisk zbierania, aby zbierać
-        bez wielokrotnego stukania. Strzałki pod lewym kciukiem służą do ruchu.
-        Jasny pierścień wskazuje cel. Do kryształów potrzebujesz kilofa.
+        bez wielokrotnego stukania. Domyślnie postać podchodzi do dotkniętego
+        miejsca. W ustawieniach pod trybikiem możesz włączyć tryb „Tylko
+        strzałki”. Jasny pierścień wskazuje cel. Do kryształów potrzebujesz
+        kilofa.
       </p>
       <p>
         W warsztacie zamienisz surowce na przedmioty. Ognisko i latarnia
@@ -345,6 +369,125 @@
       </p>
       <button class="primary-button" data-close="win-dialog">
         Zostaję na dłużej →
+      </button>
+    </dialog>
+    <dialog
+      id="settings-dialog"
+      class="modal compact settings-modal"
+      aria-labelledby="settings-title"
+    >
+      <div class="settings-heading">
+        <div>
+          <span class="eyebrow">DOPASUJ SWOJĄ WYPRAWĘ</span>
+          <h2 id="settings-title">Ustawienia</h2>
+        </div>
+        <button
+          class="icon-button"
+          data-close="settings-dialog"
+          aria-label="Zamknij ustawienia"
+        >
+          ×
+        </button>
+      </div>
+      <fieldset>
+        <legend>Sterowanie</legend>
+        <label class="setting-choice"
+          ><input type="radio" name="controls" value="tap" checked /><span
+            >Dotknięcie wyspy<small
+              >Postać sama podchodzi do miejsca. Strzałki są ukryte.</small
+            ></span
+          ></label
+        >
+        <label class="setting-choice"
+          ><input type="radio" name="controls" value="arrows" /><span
+            >Tylko strzałki<small
+              >Pokaż przyciski ruchu. Dotknięcie wyspy nie porusza
+              postacią.</small
+            ></span
+          ></label
+        >
+        <p>Szczypanie zmienia przybliżenie w obu trybach.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Grafika</legend>
+        <label for="graphics-quality">Jakość obrazu</label
+        ><select id="graphics-quality">
+          <option value="auto">Automatyczna — ostrzej przy zbliżeniu</option>
+          <option value="medium">
+            Średnia — niższa rozdzielczość i cienie
+          </option>
+          <option value="low">Niska — bez cieni, mniejsze obciążenie</option>
+        </select>
+        <p>Zmiana działa od razu, bez restartu wyprawy.</p>
+      </fieldset>
+      <fieldset>
+        <legend>Dźwięk</legend>
+        <label class="setting-choice"
+          ><input id="sound-muted" type="checkbox" /><span
+            >Wycisz wszystkie dźwięki</span
+          ></label
+        >
+        <label class="volume-label" for="volume-master"
+          >Głośność ogólna
+          <output id="value-master" for="volume-master">65%</output></label
+        ><input
+          type="range"
+          id="volume-master"
+          data-volume="master"
+          min="0"
+          max="100"
+          step="1"
+          value="65"
+        />
+        <label class="volume-label" for="volume-music"
+          >Muzyka
+          <output id="value-music" for="volume-music">35%</output></label
+        ><input
+          type="range"
+          id="volume-music"
+          data-volume="music"
+          min="0"
+          max="100"
+          step="1"
+          value="35"
+        />
+        <label class="volume-label" for="volume-ambient"
+          >Otoczenie — szum wyspy
+          <output id="value-ambient" for="volume-ambient">45%</output></label
+        ><input
+          type="range"
+          id="volume-ambient"
+          data-volume="ambient"
+          min="0"
+          max="100"
+          step="1"
+          value="45"
+        />
+        <label class="volume-label" for="volume-effects"
+          >Efekty — zbieranie i crafting
+          <output id="value-effects" for="volume-effects">70%</output></label
+        ><input
+          type="range"
+          id="volume-effects"
+          data-volume="effects"
+          min="0"
+          max="100"
+          step="1"
+          value="70"
+        />
+        <button id="sound-test" class="secondary-button">
+          Odtwórz próbkę efektu
+        </button>
+        <p id="audio-status" role="status">
+          Dźwięk uruchomi się po dotknięciu ekranu. Nie wymaga pobierania
+          plików.
+        </p>
+      </fieldset>
+      <p id="settings-status" role="status">
+        Ustawienia są niezależne od zapisu wyprawy.
+      </p>
+      <button class="primary-button" data-close="settings-dialog">
+        Wróć do gry →
       </button>
     </dialog>
     <script type="module" src="/src/main.js"></script>

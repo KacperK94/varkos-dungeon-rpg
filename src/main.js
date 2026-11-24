@@ -11,6 +11,13 @@ import {
 } from "./game.js";
 import { createWorld } from "./world.js";
 import { bindPress } from "./press.js";
+import {
+  loadSettings,
+  saveSettings,
+  normalizeSettings,
+  canTapMove,
+} from "./settings.js";
+import { createAudio } from "./audio.js";
 
 const $ = (selector) => document.querySelector(selector);
 let saved = null;
@@ -20,6 +27,22 @@ try {
   /* Storage may be disabled. Play without persistence. */
 }
 const state = saved || createState();
+let settings;
+try {
+  settings = loadSettings(localStorage);
+} catch {
+  settings = normalizeSettings();
+}
+const audio = createAudio(settings);
+let audioReady = false;
+async function unlockAudio() {
+  audioReady = await audio.unlock();
+  $("#audio-status").textContent = audioReady
+    ? "Dźwięk gotowy"
+    : "Dźwięk niedostępny lub zablokowany przez przeglądarkę";
+}
+window.addEventListener("pointerdown", unlockAudio, { capture: true });
+window.addEventListener("keydown", unlockAudio, { capture: true });
 let world,
   activeTab = "all",
   lastGather = 0,
@@ -155,6 +178,7 @@ function gatherNearest() {
     notify(result.message);
     return;
   }
+  audio.effect(node.type);
   node.shake = 1;
   if (result.depleted) world.refresh();
   notify(
@@ -169,6 +193,7 @@ $("#recipes").addEventListener("click", (event) => {
   const result = craft(state, button.dataset.craft);
   notify(result.message);
   if (result.ok) {
+    audio.effect(button.dataset.craft === "beacon" ? "win" : "craft");
     renderUI();
     save();
     if (button.dataset.craft === "beacon") {
@@ -192,6 +217,59 @@ function showDialog(id) {
   save();
   $(id).showModal();
 }
+function applySettings() {
+  stopInput();
+  document.body.classList.toggle(
+    "arrow-controls",
+    settings.controls === "arrows",
+  );
+  $(".touch-pad").inert = canTapMove(settings);
+  $("#control-hint").textContent = canTapMove(settings)
+    ? "Dotknij wyspy, aby podejść"
+    : "Poruszaj się strzałkami";
+  world?.setSettings(settings);
+  audio.update(settings);
+}
+function syncSettingsUI() {
+  document.querySelectorAll('[name="controls"]').forEach((input) => {
+    input.checked = input.value === settings.controls;
+  });
+  $("#graphics-quality").value = settings.graphics;
+  $("#sound-muted").checked = settings.muted;
+  for (const key of ["master", "music", "ambient", "effects"]) {
+    $("#volume-" + key).value = Math.round(settings[key] * 100);
+    $("#value-" + key).textContent = Math.round(settings[key] * 100) + "%";
+  }
+}
+$("#settings-button").onclick = () => {
+  syncSettingsUI();
+  showDialog("#settings-dialog");
+};
+$("#settings-dialog").addEventListener("input", (event) => {
+  const input = event.target;
+  if (input.name === "controls") settings.controls = input.value;
+  else if (input.id === "graphics-quality") settings.graphics = input.value;
+  else if (input.id === "sound-muted") settings.muted = input.checked;
+  else if (input.dataset.volume)
+    settings[input.dataset.volume] = Number(input.value) / 100;
+  else return;
+  settings = normalizeSettings(settings);
+  applySettings();
+  syncSettingsUI();
+  let stored = false;
+  try {
+    stored = saveSettings(localStorage, settings);
+  } catch {
+    /* Disabled storage. */
+  }
+  $("#settings-status").textContent = stored
+    ? "Ustawienia zapisane na tym urządzeniu"
+    : "Zapis zablokowany — ustawienia działają tylko do zamknięcia strony";
+});
+$("#sound-test").onclick = async () => {
+  await unlockAudio();
+  audio.effect("craft");
+};
 $("#help").onclick = () => showDialog("#help-dialog");
 $("#pause").onclick = () => showDialog("#pause-dialog");
 $("#reset").onclick = () => showDialog("#reset-dialog");
@@ -299,9 +377,15 @@ window.addEventListener("blur", () => {
 });
 document.addEventListener("visibilitychange", () => {
   stopInput();
-  if (document.hidden) save();
+  if (document.hidden) {
+    audio.setActive(false);
+    save();
+  }
 });
-window.addEventListener("pagehide", save);
+window.addEventListener("pagehide", () => {
+  save();
+  audio.setActive(false);
+});
 const touchDirection = {
   up: [0, -1],
   down: [0, 1],
@@ -311,7 +395,7 @@ const touchDirection = {
 for (const button of document.querySelectorAll("[data-move]")) {
   const direction = button.dataset.move;
   const step = () => {
-    if (!isActive() || workshopOpen) return;
+    if (!isActive() || workshopOpen || canTapMove(settings)) return;
     const [x, z] = touchDirection[direction];
     world.walkTo(
       state.position.x + (x * 0.8 + z * 0.6) * 0.8,
@@ -321,7 +405,7 @@ for (const button of document.querySelectorAll("[data-move]")) {
   cancelPresses.push(
     bindPress(button, {
       start() {
-        if (!isActive() || workshopOpen) return false;
+        if (!isActive() || workshopOpen || canTapMove(settings)) return false;
         world.stopWalk();
         touchKeys.add(direction);
       },
@@ -335,8 +419,9 @@ for (const button of document.querySelectorAll("[data-move]")) {
 }
 setWorkshop(false, false);
 renderUI();
+applySettings();
 try {
-  world = createWorld($("#world"), state);
+  world = createWorld($("#world"), state, settings);
   if (!saved) $("#welcome").showModal();
 } catch (error) {
   $("#error").hidden = false;
@@ -352,19 +437,32 @@ function tick(now) {
   lastFrame = now;
   if (world) {
     const active = isActive() && !workshopOpen;
+    const audioActive =
+      !document.hidden && (active || $("#settings-dialog").open);
+    audio.setActive(audioActive);
     const movement = {
       x:
         Number(
-          keys.has("KeyD") || keys.has("ArrowRight") || touchKeys.has("right"),
+          (canTapMove(settings) && keys.has("KeyD")) ||
+            keys.has("ArrowRight") ||
+            touchKeys.has("right"),
         ) -
         Number(
-          keys.has("KeyA") || keys.has("ArrowLeft") || touchKeys.has("left"),
+          (canTapMove(settings) && keys.has("KeyA")) ||
+            keys.has("ArrowLeft") ||
+            touchKeys.has("left"),
         ),
       z:
         Number(
-          keys.has("KeyS") || keys.has("ArrowDown") || touchKeys.has("down"),
+          (canTapMove(settings) && keys.has("KeyS")) ||
+            keys.has("ArrowDown") ||
+            touchKeys.has("down"),
         ) -
-        Number(keys.has("KeyW") || keys.has("ArrowUp") || touchKeys.has("up")),
+        Number(
+          (canTapMove(settings) && keys.has("KeyW")) ||
+            keys.has("ArrowUp") ||
+            touchKeys.has("up"),
+        ),
     };
     const target = world.frame(
       dt,

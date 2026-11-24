@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { clampPosition } from "./game.js";
 import { bindCameraGestures, clampZoom } from "./camera-gestures.js";
 import { renderQuality, applyRenderQuality } from "./render-quality.js";
+import { canTapMove } from "./settings.js";
 
-export function createWorld(canvas, state) {
+export function createWorld(canvas, state, initialSettings) {
+  let settings = initialSettings;
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -12,7 +14,7 @@ export function createWorld(canvas, state) {
   });
   const touchDevice = matchMedia("(pointer: coarse)").matches;
   renderer.setPixelRatio(Math.min(devicePixelRatio, touchDevice ? 1.25 : 1.75));
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = settings.graphics !== "low";
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setClearColor("#79b9bb");
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -420,6 +422,7 @@ export function createWorld(canvas, state) {
         height,
         deviceRatio: devicePixelRatio,
         touchDevice,
+        graphics: settings.graphics,
       }),
     );
   }
@@ -445,6 +448,7 @@ export function createWorld(canvas, state) {
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   function setTarget(clientX, clientY) {
+    if (!canTapMove(settings)) return;
     const rect = canvas.getBoundingClientRect();
     raycaster.setFromCamera(
       new THREE.Vector2(
@@ -578,6 +582,19 @@ export function createWorld(canvas, state) {
     nearest,
     nodes,
     changeZoom,
+    setSettings(next) {
+      settings = next;
+      walkTarget = null;
+      cameraGestures.cancel();
+      const shadows = settings.graphics !== "low";
+      if (renderer.shadowMap.enabled !== shadows) {
+        renderer.shadowMap.enabled = shadows;
+        scene.traverse((object) => {
+          if (object.material) object.material.needsUpdate = true;
+        });
+      }
+      updateQuality();
+    },
     stopWalk() {
       walkTarget = null;
       cameraGestures.cancel();
