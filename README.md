@@ -18,6 +18,7 @@ npm run dev
 - WASD / strzałki: ruch względem kamery, Shift: bieg.
 - Kliknięcie wyspy: automatyczne podejście do miejsca; kółko myszy: przybliżenie.
 - E lub przycisk zbierania: zbierz najbliższy surowiec w zasięgu trzech jednostek. Pierścień pokazuje cel.
+- Gest na wyspie: rozsuń dwa palce, aby przybliżyć; zsuń je, aby oddalić. Kamera ma te same limity co przyciski +/−. Szczypanie zatrzymuje automatyczne podejście i nie wybiera nowego celu po oderwaniu palców.
 - Telefon: strzałki 48 px pod lewym kciukiem (przytrzymaj, aby iść), duży przycisk zbierania pod prawym (przytrzymaj, aby powtarzać zbiór), przyciski +/− do kamery i wysuwany warsztat. Cele wyprawy są zwijane.
 - Puszczenie długiego przytrzymania zatrzymuje ruch bez dodatkowego kroku; anulowanie dotyku, pauza, utrata widoczności oraz otwarcie warsztatu czyszczą wejście. Warsztat wstrzymuje ruch świata i blokuje sterowanie pod spodem.
 - Układ obsługuje pion i poziom, dynamiczną wysokość ekranu i bezpieczne marginesy urządzenia. Urządzenia zgłaszające gruby wskaźnik używają pixel ratio do 1.25 i cieni 1024 px.
