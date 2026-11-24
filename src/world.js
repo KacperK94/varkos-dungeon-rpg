@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { clampPosition } from "./game.js";
+import { bindCameraGestures, clampZoom } from "./camera-gestures.js";
 
 export function createWorld(canvas, state) {
   const renderer = new THREE.WebGLRenderer({
@@ -432,26 +433,21 @@ export function createWorld(canvas, state) {
     if (raycaster.ray.intersectPlane(groundPlane, point))
       walkTarget = clampPosition(point.x, point.z);
   }
-  let tap = null;
-  canvas.addEventListener("pointerdown", (e) => {
-    if (e.button === 0 && e.isPrimary)
-      tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
-  });
-  canvas.addEventListener("pointerup", (e) => {
-    if (
-      tap?.id === e.pointerId &&
-      Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 14
-    )
-      setTarget(e.clientX, e.clientY);
-    tap = null;
-  });
-  canvas.addEventListener("pointercancel", () => {
-    tap = null;
-  });
-  function changeZoom(delta) {
-    zoom = THREE.MathUtils.clamp(zoom + delta, 16, 36);
+  function setZoom(value) {
+    zoom = clampZoom(value);
     resize();
   }
+  function changeZoom(delta) {
+    setZoom(zoom + delta);
+  }
+  const cameraGestures = bindCameraGestures(canvas, {
+    getZoom: () => zoom,
+    setZoom,
+    onTap: setTarget,
+    onPinch() {
+      walkTarget = null;
+    },
+  });
   canvas.addEventListener(
     "wheel",
     (e) => {
@@ -560,7 +556,7 @@ export function createWorld(canvas, state) {
     changeZoom,
     stopWalk() {
       walkTarget = null;
-      tap = null;
+      cameraGestures.cancel();
     },
     walkTo(x, z) {
       walkTarget = clampPosition(x, z);
@@ -570,6 +566,7 @@ export function createWorld(canvas, state) {
         node.group.visible = (state.depleted[node.id] || 0) < node.hits;
     },
     dispose() {
+      cameraGestures.dispose();
       observer.disconnect();
       renderer.dispose();
     },
