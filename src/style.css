@@ -2014,3 +2014,21 @@ body.arrow-controls .touch-pad button {
     display: none;
   }
 }
+
+/* Only dialogs/panels scroll; focusing a control must not scroll the game page. */
+html {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  overflow-y: auto;
+}
