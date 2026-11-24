@@ -2314,3 +2314,43 @@ body:has(.workshop.mobile-open) .tutorial {
     font-size: 11px;
   }
 }
+
+#menu-button {
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 850px), (pointer: coarse) {
+  .location {
+    max-width: calc(100% - 80px);
+  }
+  .location h1 {
+    font-size: 16px;
+  }
+  .world-description {
+    font-size: 9px;
+    line-height: 1.4;
+    color: #eaf2d8;
+    background: #355b499c;
+    padding: 3px 5px;
+    border-radius: 4px;
+    width: max-content;
+    max-width: 100%;
+  }
+  .quest-panel {
+    top: 120px;
+  }
+  .tutorial {
+    top: 226px;
+  }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  .quest-panel {
+    top: 8px;
+  }
+  .tutorial {
+    top: 110px;
+  }
+  .world-description {
+    display: none;
+  }
+}
