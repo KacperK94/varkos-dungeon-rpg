@@ -1,11 +1,21 @@
 import * as THREE from "three";
-import { clampPosition } from "./game.js";
 import { bindCameraGestures, clampZoom } from "./camera-gestures.js";
 import { renderQuality, applyRenderQuality } from "./render-quality.js";
+import {
+  generateNodes,
+  seededRandom,
+  obstaclesFor,
+  moveWithCollisions,
+  findPath,
+  canStand,
+} from "./world-map.js";
+import { createWildlife } from "./wildlife.js";
 import { canTapMove } from "./settings.js";
 
 export function createWorld(canvas, state, initialSettings) {
   let settings = initialSettings;
+  const generated = generateNodes(state.world);
+  let obstacles = obstaclesFor(generated, state);
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -19,7 +29,7 @@ export function createWorld(canvas, state, initialSettings) {
   renderer.setClearColor("#79b9bb");
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog("#79b9bb", 55, 120);
+  scene.fog = new THREE.Fog("#79b9bb", 65, 155);
   const camera = new THREE.OrthographicCamera(-25, 25, 25, -25, 0.1, 180);
   let zoom = 24;
   const light = new THREE.DirectionalLight("#fff0cf", 3.1);
@@ -33,7 +43,7 @@ export function createWorld(canvas, state, initialSettings) {
     top: 32,
     bottom: -32,
     near: 1,
-    far: 90,
+    far: 130,
   });
   light.shadow.normalBias = 0.045;
   scene.add(light, new THREE.HemisphereLight("#c3e8e1", "#757b46", 2.3));
@@ -58,11 +68,7 @@ export function createWorld(canvas, state, initialSettings) {
   const cylinder = (top, bottom, height, sides = 7) =>
     new THREE.CylinderGeometry(top, bottom, height, sides);
   const box = (x, y, z) => new THREE.BoxGeometry(x, y, z);
-  let seed = 741;
-  const random = () => {
-    seed = (seed * 1664525 + 1013904223) >>> 0;
-    return seed / 4294967296;
-  };
+  const random = seededRandom(state.world?.seed ?? 741);
 
   const sea = mesh(
     new THREE.PlaneGeometry(240, 240),
@@ -79,7 +85,10 @@ export function createWorld(canvas, state, initialSettings) {
   for (let i = 0; i < 95; i++) {
     const x = (random() - 0.5) * 105,
       z = (random() - 0.5) * 105;
-    if (Math.hypot(x, z) < 19) continue;
+    if (
+      state.world ? Math.abs(x) < 52 && Math.abs(z) < 52 : Math.hypot(x, z) < 19
+    )
+      continue;
     const ripple = mesh(
       box(0.5 + random() * 2.4, 0.018, 0.07),
       i % 3 ? "#9bcfca" : "#c1e0cf",
@@ -91,10 +100,48 @@ export function createWorld(canvas, state, initialSettings) {
     ripple.castShadow = false;
     ripples.push(ripple);
   }
-  mesh(cylinder(18.2, 14, 2.8, 48), "#a29a7b", scene, 0, -2.5, 0);
-  mesh(cylinder(18.25, 17.9, 0.7, 64), "#e1c999", scene, 0, -0.84, 0);
-  mesh(cylinder(16.55, 17.2, 0.8, 48), "#9ba36a", scene, 0, -0.28, 0);
-  mesh(cylinder(16.1, 16.55, 0.18, 48), "#9da96e", scene, 0, 0.15, 0);
+  const groundColor =
+    state.world?.terrain === "rocky"
+      ? "#adb09a"
+      : state.world?.terrain === "forest"
+        ? "#829d69"
+        : "#9da96e";
+  if (state.world) {
+    mesh(box(104, 2.8, 104), "#a29a7b", scene, 0, -2.5, 0);
+    mesh(box(102, 0.7, 102), "#e1c999", scene, 0, -0.84, 0);
+    const ground = mesh(box(100, 0.18, 100), groundColor, scene, 0, 0.15, 0);
+    const textureCanvas = document.createElement("canvas");
+    textureCanvas.width = textureCanvas.height = 128;
+    const ctx = textureCanvas.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = groundColor;
+      ctx.fillRect(0, 0, 128, 128);
+      for (let i = 0; i < 900; i++) {
+        ctx.fillStyle = i % 2 ? "#ffffff10" : "#263b3410";
+        ctx.fillRect(
+          random() * 128,
+          random() * 128,
+          1 + random() * 2,
+          1 + random() * 2,
+        );
+      }
+      const texture = new THREE.CanvasTexture(textureCanvas);
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(32, 32);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(
+        8,
+        renderer.capabilities.getMaxAnisotropy(),
+      );
+      ground.material = ground.material.clone();
+      ground.material.map = texture;
+    }
+  } else {
+    mesh(cylinder(18.2, 14, 2.8, 48), "#a29a7b", scene, 0, -2.5, 0);
+    mesh(cylinder(18.25, 17.9, 0.7, 64), "#e1c999", scene, 0, -0.84, 0);
+    mesh(cylinder(16.55, 17.2, 0.8, 48), "#9ba36a", scene, 0, -0.28, 0);
+    mesh(cylinder(16.1, 16.55, 0.18, 48), "#9da96e", scene, 0, 0.15, 0);
+  }
   // A meandering path leads to the signal platform on the northern ridge.
   for (let i = 0; i < 16; i++) {
     const z = 8 - i * 1.1;
@@ -112,7 +159,7 @@ export function createWorld(canvas, state, initialSettings) {
   // Handful of rocks at the shoreline, with small tufts across the meadow.
   for (let i = 0; i < 70; i++) {
     const angle = random() * Math.PI * 2;
-    const radius = 3 + random() * 13;
+    const radius = 3 + random() * (state.world ? 43 : 13);
     const x = Math.cos(angle) * radius,
       z = Math.sin(angle) * radius;
     if (Math.abs(x) < 2 || (z < -8 && Math.abs(x) < 4)) continue;
@@ -146,9 +193,9 @@ export function createWorld(canvas, state, initialSettings) {
       new THREE.IcosahedronGeometry(0.6 + random() * 0.7),
       "#a6a48e",
       scene,
-      Math.cos(a) * 17.1,
+      Math.cos(a) * (state.world ? 52 : 17.1),
       -0.2,
-      Math.sin(a) * 17.1,
+      Math.sin(a) * (state.world ? 52 : 17.1),
     );
     stone.scale.set(1, 0.7, 0.7);
   }
@@ -233,46 +280,13 @@ export function createWorld(canvas, state, initialSettings) {
     scene.add(group);
     nodes.push(node);
   }
-  // Starter resources sit close to the landing, with larger reserves inland.
-  addNode("wood", -2.2, 5.5, 0.9);
-  addNode("stone", 2.2, 5.5);
-  addNode("fiber", -1.5, 8.5);
-  const placements = [
-    ["wood", -7, 4],
-    ["wood", -9, 7],
-    ["wood", -11, 0],
-    ["wood", -7, -3],
-    ["wood", -11, -6],
-    ["wood", -5, -10],
-    ["wood", 7, 7],
-    ["wood", 10, 3],
-    ["wood", 11, -3],
-    ["wood", 7, -7],
-    ["wood", -3, -13],
-    ["wood", 4, 12],
-    ["wood", -7, 11],
-    ["wood", 11, 7],
-    ["stone", 5, 2],
-    ["stone", -5, 0],
-    ["stone", -8, -7],
-    ["stone", 6, -5],
-    ["stone", 10, -8],
-    ["stone", 4, 10],
-    ["stone", -5, 11],
-    ["stone", 8, 10],
-    ["fiber", -5, 7],
-    ["fiber", 4, 7],
-    ["fiber", -9, 3],
-    ["fiber", 8, 0],
-    ["fiber", -4, -5],
-    ["fiber", 4, -8],
-    ["crystal", -3, -8],
-    ["crystal", 4, -11],
-    ["crystal", -7, -10],
-    ["crystal", 8, -9],
-  ];
-  for (const [type, x, z] of placements)
-    addNode(type, x, z, 0.85 + random() * 0.3);
+  for (const node of generated)
+    addNode(node.type, node.x, node.z, 0.85 + random() * 0.3);
+  const wildlife = createWildlife(
+    scene,
+    random,
+    state.world?.wildlife !== false,
+  );
 
   // Ancient foundation: the crafted beacon appears here.
   const platform = new THREE.Group();
@@ -405,10 +419,66 @@ export function createWorld(canvas, state, initialSettings) {
   playerRing.rotation.x = -Math.PI / 2;
   playerRing.castShadow = false;
 
+  const heldTool = new THREE.Group();
+  heldTool.position.set(0.4, 0.8, -0.2);
+  const handle = mesh(
+    cylinder(0.04, 0.04, 0.8, 6),
+    "#876541",
+    heldTool,
+    0,
+    0,
+    0,
+  );
+  const toolHead = mesh(
+    box(0.42, 0.16, 0.16),
+    "#bac5bb",
+    heldTool,
+    0.1,
+    0.35,
+    0,
+  );
+  player.add(heldTool);
+  const chips = [];
+  for (let i = 0; i < 10; i++) {
+    const chip = mesh(
+      new THREE.IcosahedronGeometry(0.045, 0),
+      "#dfc17e",
+      scene,
+    );
+    chip.visible = false;
+    chip.castShadow = false;
+    chips.push(chip);
+  }
   const raycaster = new THREE.Raycaster();
   const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.27);
   const cameraTarget = new THREE.Vector3(0, 0, 2);
   let walkTarget = null;
+  let path = [];
+  let actionTime = 0;
+  let craftTime = 0;
+  function navigate(x, z) {
+    path = findPath(
+      { x: player.position.x, z: player.position.z },
+      { x, z },
+      obstacles,
+      state.world,
+    );
+    walkTarget = path.shift() || null;
+  }
+  if (!canStand(player.position.x, player.position.z, obstacles, state.world)) {
+    const safe = generated.length && findSafeSpawn();
+    player.position.x = safe.x;
+    player.position.z = safe.z;
+  }
+  function findSafeSpawn() {
+    for (let r = 0; r < 10; r += 0.5)
+      for (let a = 0; a < 6.3; a += 0.3) {
+        const x = state.position.x + Math.cos(a) * r,
+          z = state.position.z + Math.sin(a) * r;
+        if (canStand(x, z, obstacles, state.world)) return { x, z };
+      }
+    return { x: 0, z: 6 };
+  }
   let qualityTimer;
   function updateQuality() {
     const { width, height } = canvas.getBoundingClientRect();
@@ -423,6 +493,7 @@ export function createWorld(canvas, state, initialSettings) {
         deviceRatio: devicePixelRatio,
         touchDevice,
         graphics: settings.graphics,
+        maxDimension: renderer.capabilities.maxTextureSize,
       }),
     );
   }
@@ -459,7 +530,7 @@ export function createWorld(canvas, state, initialSettings) {
     );
     const point = new THREE.Vector3();
     if (raycaster.ray.intersectPlane(groundPlane, point))
-      walkTarget = clampPosition(point.x, point.z);
+      navigate(point.x, point.z);
   }
   function setZoom(value) {
     zoom = clampZoom(value);
@@ -474,15 +545,17 @@ export function createWorld(canvas, state, initialSettings) {
     onTap: setTarget,
     onPinch() {
       walkTarget = null;
+      path = [];
     },
   });
+  const wheelEvents = new AbortController();
   canvas.addEventListener(
     "wheel",
     (e) => {
       e.preventDefault();
       changeZoom(e.deltaY * 0.015);
     },
-    { passive: false },
+    { passive: false, signal: wheelEvents.signal },
   );
   function nearest() {
     let best = null,
@@ -502,12 +575,13 @@ export function createWorld(canvas, state, initialSettings) {
   }
   let time = 0;
   function frame(dt, movement, running, active) {
-    time += dt;
+    if (active) time += dt;
     if (active) {
       let dx = movement.x,
         dz = movement.z;
       if (dx || dz) {
         walkTarget = null;
+        path = [];
         // Screen-relative axes for the isometric camera.
         const x = dx * 0.8 + dz * 0.6;
         dz = dz * 0.8 - dx * 0.6;
@@ -516,7 +590,7 @@ export function createWorld(canvas, state, initialSettings) {
         dx = walkTarget.x - player.position.x;
         dz = walkTarget.z - player.position.z;
         if (Math.hypot(dx, dz) < 0.12) {
-          walkTarget = null;
+          walkTarget = path.shift() || null;
           dx = 0;
           dz = 0;
         }
@@ -525,10 +599,22 @@ export function createWorld(canvas, state, initialSettings) {
       if (length > 0.01) {
         const speed = (running ? 6.8 : 4.2) * dt;
         const step = Math.min(speed, length);
-        const next = clampPosition(
-          player.position.x + (dx / length) * step,
-          player.position.z + (dz / length) * step,
+        const next = moveWithCollisions(
+          { x: player.position.x, z: player.position.z },
+          {
+            x: player.position.x + (dx / length) * step,
+            z: player.position.z + (dz / length) * step,
+          },
+          obstacles,
+          state.world,
         );
+        if (
+          Math.hypot(next.x - player.position.x, next.z - player.position.z) <
+          0.001
+        ) {
+          walkTarget = null;
+          path = [];
+        }
         player.position.x = next.x;
         player.position.z = next.z;
         player.rotation.y = Math.atan2(-dx, -dz);
@@ -541,26 +627,62 @@ export function createWorld(canvas, state, initialSettings) {
         limbs.forEach((limb) => {
           limb.rotation.x *= 0.8;
         });
-        player.position.y = 0.27;
+        player.position.y = 0.27 + Math.sin(time * 2) * 0.025;
       }
       state.position.x = player.position.x;
       state.position.z = player.position.z;
     }
     cameraTarget.lerp(
-      new THREE.Vector3(
-        player.position.x * 0.55,
-        0,
-        player.position.z * 0.55 - 1.8,
-      ),
+      new THREE.Vector3(player.position.x, 0, player.position.z - 1.8),
       1 - Math.exp(-dt * 2.5),
     );
     camera.position.copy(cameraTarget).add(new THREE.Vector3(24, 32, 32));
     camera.lookAt(cameraTarget);
+    light.position.copy(cameraTarget).add(new THREE.Vector3(-18, 30, 15));
+    light.target.position.copy(cameraTarget);
+    light.target.updateMatrixWorld();
+    wildlife.update(time, player.position, settings.graphics === "low");
+    if (active) {
+      actionTime = Math.max(0, actionTime - dt);
+      craftTime = Math.max(0, craftTime - dt);
+    }
+    if (actionTime > 0) {
+      limbs[1].rotation.x = -1.2 + Math.sin(actionTime * 25) * 0.6;
+      player.rotation.z = Math.sin(actionTime * 20) * 0.06;
+    } else player.rotation.z = 0;
+    heldTool.visible =
+      state.crafted.includes("axe") || state.crafted.includes("pickaxe");
+    heldTool.rotation.x =
+      actionTime > 0 ? -1 + Math.sin(actionTime * 25) * 0.8 : -0.2;
+    toolHead.scale.x = state.crafted.includes("pickaxe") ? 1.6 : 1;
+    for (let i = 0; i < chips.length; i++) {
+      const chip = chips[i];
+      chip.visible = actionTime > 0;
+      if (chip.visible) {
+        const t = 0.45 - actionTime;
+        chip.position.set(
+          player.position.x + Math.sin(i * 2) * t * 2,
+          0.6 + Math.sin(t * 6) * 0.7,
+          player.position.z + Math.cos(i * 2) * t * 2,
+        );
+      }
+    }
+    const buildScale = 1 + Math.sin(craftTime * 16) * craftTime * 0.1;
+    fire.scale.setScalar(buildScale);
+    beacon.scale.setScalar(buildScale);
+    for (const node of nodes) {
+      node.group.visible =
+        (state.depleted[node.id] || 0) < node.hits &&
+        Math.hypot(node.x - player.position.x, node.z - player.position.z) < 42;
+    }
+
     for (let i = 0; i < ripples.length; i++)
-      ripples[i].position.x += Math.sin(time * 0.5 + i) * dt * 0.06;
+      if (active) ripples[i].position.x += Math.sin(time * 0.5 + i) * dt * 0.06;
     for (const node of nodes) {
       node.shake = Math.max(0, node.shake - dt * 4);
-      node.group.rotation.z = Math.sin(time * 44) * node.shake * 0.12;
+      node.group.rotation.z =
+        Math.sin(time * 44) * node.shake * 0.12 +
+        (node.type === "wood" ? Math.sin(time * 1.2 + node.x) * 0.008 : 0);
     }
     const target = nearest();
     selection.visible = !!target && active;
@@ -585,6 +707,7 @@ export function createWorld(canvas, state, initialSettings) {
     setSettings(next) {
       settings = next;
       walkTarget = null;
+      path = [];
       cameraGestures.cancel();
       const shadows = settings.graphics !== "low";
       if (renderer.shadowMap.enabled !== shadows) {
@@ -597,19 +720,47 @@ export function createWorld(canvas, state, initialSettings) {
     },
     stopWalk() {
       walkTarget = null;
+      path = [];
       cameraGestures.cancel();
     },
-    walkTo(x, z) {
-      walkTarget = clampPosition(x, z);
+    walkTo: navigate,
+    animateAction(kind) {
+      if (kind === "gather") actionTime = 0.45;
+      else craftTime = 0.8;
     },
     refresh() {
+      obstacles = obstaclesFor(generated, state);
+      if (
+        !canStand(player.position.x, player.position.z, obstacles, state.world)
+      ) {
+        const safe = findSafeSpawn();
+        player.position.x = safe.x;
+        player.position.z = safe.z;
+      }
       for (const node of nodes)
         node.group.visible = (state.depleted[node.id] || 0) < node.hits;
     },
     dispose() {
       clearTimeout(qualityTimer);
+      wheelEvents.abort();
       cameraGestures.dispose();
       observer.disconnect();
+      const geometries = new Set(),
+        materialsToDispose = new Set(),
+        textures = new Set();
+      scene.traverse((object) => {
+        if (object.geometry) geometries.add(object.geometry);
+        if (object.material) {
+          for (const material of [object.material].flat()) {
+            materialsToDispose.add(material);
+            if (material.map) textures.add(material.map);
+          }
+        }
+      });
+      geometries.forEach((g) => g.dispose());
+      textures.forEach((t) => t.dispose());
+      materialsToDispose.forEach((m) => m.dispose());
+      light.shadow.map?.dispose();
       renderer.dispose();
     },
   };

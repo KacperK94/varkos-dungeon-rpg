@@ -7,7 +7,13 @@ export function renderQuality({
   deviceRatio,
   touchDevice,
   graphics = "auto",
+  maxDimension = 8192,
 }) {
+  if (graphics === "fullhd" || graphics === "4k") {
+    const target = graphics === "4k" ? 3840 : 1920;
+    const ratio = Math.min(target, maxDimension) / Math.max(1, width, height);
+    return { pixelRatio: ratio, shadowSize: 2048 };
+  }
   if (graphics === "low" || graphics === "medium") {
     const budget = graphics === "low" ? 1_000_000 : 2_000_000;
     return {

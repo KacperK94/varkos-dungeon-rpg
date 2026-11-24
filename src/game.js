@@ -1,3 +1,4 @@
+import { normalizeWorld, inBounds } from "./world-map.js";
 import { ICONS } from "./icons.js";
 
 export const SAVE_KEY = "ember-island-v1";
@@ -55,6 +56,7 @@ export function createState() {
 export function craftReason(state, recipe) {
   if (!recipe) return "Nieznana receptura";
   if (state.crafted.includes(recipe.id)) return "Już wytworzono";
+  if (state.world?.mode === "explorer") return "";
   if (recipe.requires?.some((id) => !state.crafted.includes(id)))
     return "Wymaga ogniska i kilofa";
   if (
@@ -69,7 +71,9 @@ export function craft(state, id) {
   const recipe = RECIPES.find((item) => item.id === id);
   const reason = craftReason(state, recipe);
   if (reason) return { ok: false, message: reason };
-  for (const [key, value] of Object.entries(recipe.cost))
+  for (const [key, value] of Object.entries(
+    state.world?.mode === "explorer" ? {} : recipe.cost,
+  ))
     state.inventory[key] -= value;
   state.crafted.push(id);
   return { ok: true, message: `Wytworzono: ${recipe.name}` };
@@ -77,7 +81,11 @@ export function craft(state, id) {
 export function gather(state, node) {
   const hits = state.depleted[node.id] || 0;
   if (hits >= node.hits) return { ok: false, message: "Surowiec wyczerpany" };
-  if (node.type === "crystal" && !state.crafted.includes("pickaxe"))
+  if (
+    node.type === "crystal" &&
+    !state.crafted.includes("pickaxe") &&
+    state.world?.mode !== "explorer"
+  )
     return { ok: false, message: "Do kryształów potrzebujesz kilofa" };
   const amount =
     (node.type === "wood" && state.crafted.includes("axe")) ||
@@ -94,6 +102,12 @@ export function restore(raw) {
     if (data?.version !== 1 || !data.inventory || !Array.isArray(data.crafted))
       return null;
     const state = createState();
+    if (data.world?.generator === 1 && Number.isInteger(data.world.seed)) {
+      state.world = normalizeWorld(data.world);
+      state.tutorial = Number.isInteger(data.tutorial)
+        ? Math.max(0, Math.min(5, data.tutorial))
+        : 0;
+    }
     for (const key of Object.keys(MATERIALS)) {
       const value = data.inventory[key];
       if (!Number.isSafeInteger(value) || value < 0 || value > 100000)
@@ -117,7 +131,7 @@ export function restore(raw) {
     if (
       Number.isFinite(data.position?.x) &&
       Number.isFinite(data.position?.z) &&
-      Math.hypot(data.position.x, data.position.z) < 16
+      inBounds(data.position.x, data.position.z, state.world)
     )
       state.position = { x: data.position.x, z: data.position.z };
     if (Number.isFinite(data.elapsed) && data.elapsed >= 0)
@@ -132,4 +146,21 @@ export function clampPosition(x, z) {
   return distance > 15.5
     ? { x: (x / distance) * 15.5, z: (z / distance) * 15.5 }
     : { x, z };
+}
+
+export function createExpedition(config) {
+  return { ...createState(), world: normalizeWorld(config), tutorial: 0 };
+}
+export function inventoryItems(state) {
+  return RECIPES.filter((recipe) => state.crafted.includes(recipe.id)).map(
+    (recipe) => ({
+      id: recipe.id,
+      name: recipe.name,
+      icon: recipe.icon,
+      kind:
+        recipe.category === "tools"
+          ? "Założone automatycznie"
+          : "Zbudowane na wyspie",
+    }),
+  );
 }
