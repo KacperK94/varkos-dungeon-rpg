@@ -21,7 +21,7 @@ npm run dev
 - Gest na wyspie: rozsuń dwa palce, aby przybliżyć; zsuń je, aby oddalić. Kamera ma te same limity co przyciski +/−. Szczypanie zatrzymuje automatyczne podejście i nie wybiera nowego celu po oderwaniu palców.
 - Telefon: strzałki 48 px pod lewym kciukiem (przytrzymaj, aby iść), duży przycisk zbierania pod prawym (przytrzymaj, aby powtarzać zbiór), przyciski +/− do kamery i wysuwany warsztat. Cele wyprawy są zwijane.
 - Puszczenie długiego przytrzymania zatrzymuje ruch bez dodatkowego kroku; anulowanie dotyku, pauza, utrata widoczności oraz otwarcie warsztatu czyszczą wejście. Warsztat wstrzymuje ruch świata i blokuje sterowanie pod spodem.
-- Układ obsługuje pion i poziom, dynamiczną wysokość ekranu i bezpieczne marginesy urządzenia. Urządzenia zgłaszające gruby wskaźnik używają pixel ratio do 1.25 i cieni 1024 px.
+- Układ obsługuje pion i poziom, dynamiczną wysokość ekranu i bezpieczne marginesy urządzenia. Rozdzielczość zwiększa się przy przybliżaniu: na telefonach pixel ratio od 1.25 do 2, na komputerach od 1.75 do 2.5, nie więcej niż gęstość ekranu. Budżet bufora to 3 mln pikseli na dotyku / 5 mln na komputerze; na dużych ekranach limit może obniżyć pixel ratio poniżej wartości bazowej. Cienie na telefonie rosną z 1024 do 2048 px przy zoomie ≤20. Jakość jest aktualizowana 180 ms po ostatniej zmianie zoomu/rozmiaru, nie przy każdym ruchu palców. Nie jest to adaptacja do mierzonego FPS.
 - C: przełącz warsztat na małym ekranie; Esc: pauza; ?: pomoc.
 
 Zbieraj drewno, kamień i włókna. Siekiera podwaja zbiór drewna. Kilof podwaja zbiór kamienia i umożliwia wydobycie kryształów. Ognisko pojawia się w centrum obozu, a latarnia na północnej platformie. Zbudowanie latarni kończy główny cel i pozwala dalej eksplorować.
@@ -32,7 +32,7 @@ Postęp zapisuje się w `localStorage` pod kluczem `ember-island-v1`. Dane pozos
 
 To nowa, osobna gra, nie migracja wcześniejszego VARKOS-a. W repozytorium przed tą implementacją nie było kodu wcześniejszej gry, jedynie instrukcje i szkic jej architektury. Istniejące dokumenty pozostawiono bez zmian. PR nie zastępuje produkcji, dopóki nie zostanie scalony i wdrożony.
 
-Wymagany WebGL 2. Modele low-poly, limit pixel ratio 1.75, pojedyncze światło z cieniem. Surowce są skończone i wystarczają na wszystkie receptury. Nie ma walki, fizyki brył sztywnych, multiplayera ani swobodnego stawiania budynków. Fonty Google są opcjonalne — bez sieci używane są fonty systemowe. Node testuje model stanu; rzeczywiste urządzenia i GPU wymagają osobnych prób.
+Wymagany WebGL 2. Modele low-poly, jakość renderowania zależna od przybliżenia, pojedyncze światło z cieniem. Zakres zoomu pozostaje 16–36; modele i mechaniki nie zmieniają się przy zbliżeniu. Surowce są skończone i wystarczają na wszystkie receptury. Nie ma walki, fizyki brył sztywnych, multiplayera ani swobodnego stawiania budynków. Fonty Google są opcjonalne — bez sieci używane są fonty systemowe. Node testuje model stanu; rzeczywiste urządzenia i GPU wymagają osobnych prób.
 
 ## Plan realizacji
 
