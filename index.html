@@ -54,7 +54,7 @@
     </header>
 
     <main>
-      <section class="viewport" aria-label="Świat gry 3D">
+      <section class="viewport" id="play-area" aria-label="Świat gry 3D">
         <canvas
           id="world"
           aria-label="Wyspa 3D. Poruszaj się WASD, strzałkami lub kliknij miejsce. E zbiera pobliski surowiec."
@@ -70,11 +70,21 @@
         <section class="quest-panel" aria-label="Cele wyprawy">
           <span class="eyebrow">TWOJA WYPRAWA</span>
           <h2>Światło na horyzoncie</h2>
-          <p>Z małych rzeczy powstaje dom.</p>
-          <ol id="quests"></ol>
-          <div class="quest-progress"><span id="quest-bar"></span></div>
-          <div class="quest-footer">
-            <span id="quest-count">0 / 3</span><span>kroków do celu</span>
+          <button
+            id="quest-toggle"
+            class="quest-toggle"
+            aria-expanded="false"
+            aria-controls="quest-details"
+          >
+            Cele wyprawy <span aria-hidden="true">+</span>
+          </button>
+          <div id="quest-details">
+            <p>Z małych rzeczy powstaje dom.</p>
+            <ol id="quests"></ol>
+            <div class="quest-progress"><span id="quest-bar"></span></div>
+            <div class="quest-footer">
+              <span id="quest-count">0 / 3</span><span>kroków do celu</span>
+            </div>
           </div>
         </section>
         <div class="compass" aria-hidden="true">
@@ -92,6 +102,10 @@
               <path d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z" />
             </svg>
           </div>
+        </div>
+        <div class="zoom-controls" aria-label="Przybliżenie kamery">
+          <button id="zoom-in" aria-label="Przybliż kamerę">+</button>
+          <button id="zoom-out" aria-label="Oddal kamerę">−</button>
         </div>
         <div class="island-caption" aria-hidden="true">
           PRZYSTAŃ ROZBITKA <span>—</span> 04° N · 18° E
@@ -130,7 +144,14 @@
             ><span><kbd>C</kbd> crafting</span
             ><span class="click-guide">kliknij, aby podejść</span>
           </div>
-          <button id="mobile-craft" class="mobile-craft">⚒ Warsztat</button>
+          <button
+            id="mobile-craft"
+            class="mobile-craft"
+            aria-expanded="false"
+            aria-controls="workshop"
+          >
+            Warsztat
+          </button>
         </div>
         <nav class="touch-pad" aria-label="Sterowanie ruchem">
           <button data-move="up" aria-label="Idź w górę">↑</button>
@@ -149,6 +170,13 @@
         </div>
       </section>
 
+      <button
+        id="workshop-backdrop"
+        class="workshop-backdrop"
+        aria-label="Zamknij warsztat i wróć do gry"
+        tabindex="-1"
+        hidden
+      ></button>
       <aside class="workshop" id="workshop" aria-label="Warsztat craftingu">
         <div class="workshop-title">
           <div>
@@ -236,9 +264,15 @@
         horyzont.
       </p>
       <div class="intro-controls">
-        <span><kbd>WASD / strzałki</kbd> poruszanie</span
-        ><span><kbd>E</kbd> zbieranie surowców</span
-        ><span><kbd>kliknięcie wyspy</kbd> podejdź do miejsca</span>
+        <span class="touch-intro"
+          ><kbd>lewe strzałki</kbd> przytrzymaj, aby iść</span
+        >
+        <span class="touch-intro"
+          ><kbd>przycisk Zbierz</kbd> przytrzymaj, aby zbierać</span
+        >
+        <span class="desktop-intro"><kbd>WASD / strzałki</kbd> poruszanie</span
+        ><span class="desktop-intro"><kbd>E</kbd> zbieranie surowców</span
+        ><span><kbd>dotknij wyspy</kbd> podejdź do miejsca</span>
       </div>
       <button id="start" class="primary-button">
         Zacznij wyprawę <span>→</span></button
@@ -254,8 +288,9 @@
       </p>
       <p>
         Podejdź do drzewa, skały lub rośliny i naciśnij <b>E</b> albo przycisk
-        zbierania. Jasny pierścień wskazuje cel. Do kryształów potrzebujesz
-        kilofa.
+        zbierania. Na telefonie przytrzymaj duży przycisk zbierania, aby zbierać
+        bez wielokrotnego stukania. Strzałki pod lewym kciukiem służą do ruchu.
+        Jasny pierścień wskazuje cel. Do kryształów potrzebujesz kilofa.
       </p>
       <p>
         W warsztacie zamienisz surowce na przedmioty. Ognisko i latarnia
