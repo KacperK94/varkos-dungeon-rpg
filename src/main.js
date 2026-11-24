@@ -245,7 +245,7 @@ $("#settings-button").onclick = () => {
   syncSettingsUI();
   showDialog("#settings-dialog");
 };
-$("#settings-dialog").addEventListener("input", (event) => {
+function changeSetting(event) {
   const input = event.target;
   if (input.name === "controls") settings.controls = input.value;
   else if (input.id === "graphics-quality") settings.graphics = input.value;
@@ -265,7 +265,9 @@ $("#settings-dialog").addEventListener("input", (event) => {
   $("#settings-status").textContent = stored
     ? "Ustawienia zapisane na tym urządzeniu"
     : "Zapis zablokowany — ustawienia działają tylko do zamknięcia strony";
-});
+}
+$("#settings-dialog").addEventListener("input", changeSetting);
+$("#settings-dialog").addEventListener("change", changeSetting);
 $("#sound-test").onclick = async () => {
   await unlockAudio();
   audio.effect("craft");
