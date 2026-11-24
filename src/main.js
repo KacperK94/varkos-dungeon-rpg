@@ -3,7 +3,8 @@ import {
   SAVE_KEY,
   MATERIALS,
   RECIPES,
-  createState,
+  createExpedition,
+  inventoryItems,
   restore,
   craft,
   craftReason,
@@ -26,7 +27,10 @@ try {
 } catch {
   /* Storage may be disabled. Play without persistence. */
 }
-const state = saved || createState();
+const state =
+  saved ||
+  createExpedition({ seed: crypto.getRandomValues(new Uint32Array(1))[0] });
+let sessionStarted = false;
 let settings;
 try {
   settings = loadSettings(localStorage);
@@ -68,6 +72,10 @@ function setWorkshop(open, restoreFocus = true) {
   panel.inert = mobileLayout.matches && !workshopOpen;
   $("#workshop-backdrop").hidden = !workshopOpen;
   $("#mobile-craft").setAttribute("aria-expanded", String(workshopOpen));
+  if (workshopOpen && state.tutorial === 2) {
+    state.tutorial = 3;
+    renderTutorial();
+  }
   $("#play-area").inert = workshopOpen;
   $(".topbar").inert = workshopOpen;
   if (workshopOpen) {
@@ -83,8 +91,12 @@ function setWorkshop(open, restoreFocus = true) {
 mobileLayout.addEventListener("change", () => setWorkshop(false, false));
 const dialogs = [...document.querySelectorAll("dialog")];
 const isActive = () =>
-  !dialogs.some((dialog) => dialog.open) && !document.hidden && !!world;
+  sessionStarted &&
+  !dialogs.some((dialog) => dialog.open) &&
+  !document.hidden &&
+  !!world;
 function save() {
+  if (!sessionStarted) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
     $("#save-status").textContent = "Zapisano lokalnie";
@@ -112,6 +124,15 @@ function renderUI() {
         `<div class="material"><span class="material-icon ${key}">${item.icon}</span><span>${item.name}<strong id="count-${key}">${state.inventory[key]}</strong></span></div>`,
     )
     .join("");
+  const equipment = inventoryItems(state);
+  $("#equipment").innerHTML = equipment.length
+    ? equipment
+        .map(
+          (item) =>
+            `<div class="equipment-item"><span>${item.icon}</span><div><strong>${item.name}</strong><small>${item.kind}</small></div></div>`,
+        )
+        .join("")
+    : '<p class="empty-pack">Brak narzędzi i budowli. Wytwórz pierwszy przedmiot poniżej.</p>';
   const filtered = RECIPES.filter(
     (recipe) => activeTab === "all" || recipe.category === activeTab,
   );
@@ -124,11 +145,11 @@ function renderUI() {
       )
         .map(
           ([key, value]) =>
-            `<span class="cost ${state.inventory[key] >= value || done ? "enough" : ""}" title="${MATERIALS[key].name}"><span aria-hidden="true">${MATERIALS[key].icon}</span> ${value}<span class="sr-only"> ${MATERIALS[key].name}</span></span>`,
+            `<span class="cost ${state.inventory[key] >= value || done ? "enough" : ""}" title="${MATERIALS[key].name}"><span aria-hidden="true">${MATERIALS[key].icon}</span> ${state.inventory[key]}/${value}<span class="sr-only"> ${MATERIALS[key].name}</span></span>`,
         )
         .join(
           "",
-        )}</div><button class="craft-button" data-craft="${recipe.id}" ${reason ? "disabled" : ""} title="${reason || "Wytwórz przedmiot"}">${done ? "W ekwipunku" : reason === "Wymaga ogniska i kilofa" ? "Najpierw ognisko i kilof" : reason ? "Brakuje surowców" : "Wytwórz"}<span>${done ? "" : "→"}</span><span class="sr-only"> — ${recipe.name}</span></button></article>`;
+        )}</div><button class="craft-button" data-craft="${recipe.id}" ${reason ? "disabled" : ""} title="${reason || "Wytwórz przedmiot"}">${done ? (recipe.category === "camp" ? "Zbudowano" : "Założone") : reason === "Wymaga ogniska i kilofa" ? "Najpierw ognisko i kilof" : reason ? "Brakuje surowców" : state.world?.mode === "explorer" ? "Wytwórz bez kosztu" : "Wytwórz"}<span>${done ? "" : "→"}</span><span class="sr-only"> — ${recipe.name}</span></button></article>`;
     })
     .join("");
   const quests = [
@@ -179,6 +200,11 @@ function gatherNearest() {
     return;
   }
   audio.effect(node.type);
+  world.animateAction("gather");
+  if (state.tutorial === 1) {
+    state.tutorial = 2;
+    renderTutorial();
+  }
   node.shake = 1;
   if (result.depleted) world.refresh();
   notify(
@@ -194,6 +220,12 @@ $("#recipes").addEventListener("click", (event) => {
   notify(result.message);
   if (result.ok) {
     audio.effect(button.dataset.craft === "beacon" ? "win" : "craft");
+    world.animateAction("craft");
+    world.refresh();
+    if (state.tutorial === 3) {
+      state.tutorial = 4;
+      renderTutorial();
+    }
     renderUI();
     save();
     if (button.dataset.craft === "beacon") {
@@ -276,25 +308,135 @@ $("#help").onclick = () => showDialog("#help-dialog");
 $("#pause").onclick = () => showDialog("#pause-dialog");
 $("#reset").onclick = () => showDialog("#reset-dialog");
 $("#confirm-reset").onclick = () => {
-  Object.assign(state, createState());
-  save();
-  location.reload();
+  $("#reset-dialog").close();
+  openMenu();
 };
-$("#start").onclick = () => {
-  $("#welcome").close();
+function randomSeed() {
+  return crypto.getRandomValues(new Uint32Array(1))[0];
+}
+function openMenu() {
+  stopInput();
+  setWorkshop(false, false);
   save();
-  notify(
-    saved
-      ? "Witaj ponownie na swojej wyspie."
-      : "Pierwszy krok: zbierz drewno, kamień i włókna.",
-  );
+  $("#continue-game").disabled = !sessionStarted && !saved;
+  $("#replace-save").hidden = !sessionStarted && !saved;
+  $("#main-menu").showModal();
+}
+$("#menu-button").onclick = openMenu;
+$("#continue-game").onclick = () => {
+  sessionStarted = true;
+  $("#main-menu").close();
+  renderTutorial();
+};
+$("#menu-settings").onclick = () => {
+  syncSettingsUI();
+  $("#settings-dialog").showModal();
+};
+$("#world-mode").onchange = () => {
+  $("#custom-world").hidden = $("#world-mode").value !== "custom";
+};
+$("#launch-game").onclick = () => {
+  if ((sessionStarted || saved) && !$("#replace-confirm").checked) {
+    $("#menu-status").textContent =
+      "Potwierdź zastąpienie zapisanej wyprawy albo wybierz Kontynuuj.";
+    return;
+  }
+  const mode = $("#world-mode").value;
+  const seedText = $("#world-seed").value.trim();
+  const config = {
+    seed: mode === "custom" && seedText ? Number(seedText) : randomSeed(),
+    mode: mode === "explorer" ? "explorer" : "survival",
+    terrain:
+      mode === "custom"
+        ? $("#world-terrain").value
+        : ["meadow", "forest", "rocky"][randomSeed() % 3],
+    vegetation: mode === "custom" ? $("#world-vegetation").value : "normal",
+    resources: mode === "custom" ? $("#world-resources").value : "normal",
+    wildlife: mode === "custom" ? $("#world-wildlife").checked : true,
+  };
+  if (
+    !Number.isInteger(config.seed) ||
+    config.seed < 0 ||
+    config.seed > 4294967295
+  ) {
+    $("#menu-status").textContent = "Ziarno musi być liczbą 0–4294967295.";
+    return;
+  }
+  stopInput();
+  setWorkshop(false, false);
+  world?.dispose();
+  sessionStarted = false;
+  for (const key of Object.keys(state)) delete state[key];
+  Object.assign(state, createExpedition(config));
+  try {
+    world = createWorld($("#world"), state, settings);
+  } catch {
+    world = null;
+    $("#menu-status").textContent =
+      "Nie udało się uruchomić grafiki. Odśwież stronę — poprzedni zapis nie został nadpisany.";
+    return;
+  }
+  sessionStarted = true;
+  saved = null;
+  previousTarget = "";
+  saveTime = 0;
+  $("#main-menu").close();
+  $("#replace-confirm").checked = false;
+  renderUI();
+  renderTutorial();
+  updateWorldLabel();
+  save();
+};
+function updateWorldLabel() {
+  $("#world-description").textContent = state.world
+    ? `100 × 100 m · ziarno ${state.world.seed} · ${state.world.mode === "explorer" ? "Odkrywca" : "Wyprawa"}`
+    : "Stara wyspa · zachowany zapis";
+}
+const lessons = [
+  [
+    "Pierwszy krok",
+    "Dotknij wolnego miejsca na wyspie lub użyj strzałek. Postać omija drzewa i skały.",
+  ],
+  [
+    "Zbierz surowiec",
+    "Podejdź do drzewa lub skały. Dotknij Zbierz albo naciśnij E. Możesz przytrzymać przycisk.",
+  ],
+  [
+    "Otwórz plecak",
+    "Dotknij Plecak i crafting. Zobaczysz surowce, narzędzia i dostępne receptury.",
+  ],
+  [
+    "Wytwórz przedmiot",
+    "Zbierz wymagane ilości i wytwórz siekierę lub kilof. W trybie odkrywcy receptury są darmowe.",
+  ],
+  [
+    "Gotowe do wyprawy",
+    "Narzędzia zakładają się automatycznie. Ognisko i latarnię znajdziesz przy ścieżce na północy. Powodzenia!",
+  ],
+];
+let tutorialStage = -1;
+function renderTutorial() {
+  const stage = state.tutorial ?? 5;
+  $("#tutorial").hidden = !sessionStarted || stage >= 5;
+  if (stage === tutorialStage) return;
+  tutorialStage = stage;
+  if (stage < 5) {
+    $("#tutorial-title").textContent = `${stage + 1}/5 · ${lessons[stage][0]}`;
+    $("#tutorial-text").textContent = lessons[stage][1];
+    $("#tutorial-done").hidden = stage !== 4;
+  }
+}
+$("#tutorial-skip").onclick = $("#tutorial-done").onclick = () => {
+  state.tutorial = 5;
+  renderTutorial();
+  save();
 };
 for (const button of document.querySelectorAll("[data-close]"))
   button.onclick = () => $(`#${button.dataset.close}`).close();
 // Keep the introduction open until the player explicitly starts.
 for (const dialog of dialogs)
   dialog.addEventListener("cancel", (event) => {
-    if (dialog.id === "welcome") event.preventDefault();
+    if (dialog.id === "main-menu") event.preventDefault();
   });
 cancelPresses.push(
   bindPress($("#gather"), {
@@ -424,7 +566,8 @@ renderUI();
 applySettings();
 try {
   world = createWorld($("#world"), state, settings);
-  if (!saved) $("#welcome").showModal();
+  updateWorldLabel();
+  openMenu();
 } catch (error) {
   $("#error").hidden = false;
   $("#gather").disabled = true;
@@ -466,6 +609,8 @@ function tick(now) {
             touchKeys.has("up"),
         ),
     };
+    const oldX = state.position.x,
+      oldZ = state.position.z;
     const target = world.frame(
       dt,
       movement,
@@ -473,6 +618,17 @@ function tick(now) {
       active,
     );
     if (active) {
+      if (state.tutorial === 2 && !mobileLayout.matches) {
+        state.tutorial = 3;
+        renderTutorial();
+      }
+      if (
+        state.tutorial === 0 &&
+        Math.hypot(state.position.x - oldX, state.position.z - oldZ) > 0.001
+      ) {
+        state.tutorial = 1;
+        renderTutorial();
+      }
       if (holdingGather) gatherNearest();
       state.elapsed += dt;
       saveTime += dt;

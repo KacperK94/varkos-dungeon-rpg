@@ -40,6 +40,9 @@
         <span class="tag">PROTOTYP 01</span>
       </div>
       <div class="top-actions">
+        <button id="menu-button" class="icon-button" aria-label="Menu główne">
+          ☰
+        </button>
         <button
           id="settings-button"
           class="icon-button settings-gear"
@@ -85,7 +88,8 @@
           <h1>Wyspa Pierwszego Żaru<span>01</span></h1>
           <p>
             <span class="sun">☀</span> Pogodny dzień
-            <span class="separator">/</span> <span id="day">Dzień 1</span>
+            <span class="separator">/</span> <span id="day">Dzień 1</span
+            ><small id="world-description" class="world-description"></small>
           </p>
         </div>
         <section class="quest-panel" aria-label="Cele wyprawy">
@@ -172,7 +176,7 @@
             aria-expanded="false"
             aria-controls="workshop"
           >
-            Warsztat
+            Plecak i crafting
           </button>
         </div>
         <nav class="touch-pad" aria-label="Sterowanie ruchem">
@@ -203,7 +207,7 @@
         <div class="workshop-title">
           <div>
             <span class="eyebrow">ZBUDUJ COŚ SWOJEGO</span>
-            <h2>Warsztat<span aria-hidden="true">/</span></h2>
+            <h2>Plecak i crafting</h2>
           </div>
           <button
             id="close-workshop"
@@ -218,7 +222,9 @@
             <h3>Twój plecak</h3>
             <span>SUROWCE</span>
           </div>
-          <div class="material-grid" id="inventory"></div>
+          <div class="material-grid" id="inventory" aria-live="polite"></div>
+          <h3 class="equipment-title">Twoje wyposażenie i obóz</h3>
+          <div id="equipment" aria-live="polite"></div>
         </section>
         <div class="recipes-heading">
           <h3>Receptury</h3>
@@ -264,41 +270,69 @@
       </aside>
     </main>
 
-    <dialog id="welcome" class="modal">
-      <div class="modal-mark">
-        <svg
-          viewBox="0 0 32 40"
-          width="1em"
-          height="1em"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path d="m16 2 13 18-13 18L3 20zM3 20h26M16 2 9 20l7 18 7-18z" />
-        </svg>
-      </div>
-      <span class="eyebrow">WITAJ NA SWOJEJ WYSPIE</span>
-      <h2>Rozpal początek<br />nowej przygody.</h2>
-      <p>
-        Ocean wyrzucił cię na nieznany brzeg. Zbierz to, co daje wyspa. Stwórz
-        narzędzia, rozpal ognisko i wznieś latarnię, której światło dotrze za
-        horyzont.
+    <dialog id="main-menu" class="modal main-menu" aria-labelledby="menu-title">
+      <span class="eyebrow">ARCHIPELAG SPOKOJU · NOWA WYPRAWA</span>
+      <h1 id="menu-title">Żar Wyspy</h1>
+      <p class="menu-lead">
+        Wielki świat. Małe odkrycia.<br />Wyrusz na własną wyspę 100 × 100
+        metrów.
       </p>
-      <div class="intro-controls">
-        <span class="touch-intro"
-          ><kbd>dotknij wyspy</kbd> postać sama podejdzie</span
+      <button id="continue-game" class="primary-button">
+        Kontynuuj zapisaną wyprawę →
+      </button>
+      <div class="menu-divider">LUB STWÓRZ NOWY ŚWIAT</div>
+      <label for="world-mode">Rodzaj wyprawy</label
+      ><select id="world-mode">
+        <option value="random">Losowy świat</option>
+        <option value="custom">Świat według własnych preferencji</option>
+        <option value="explorer">Tryb odkrywcy — darmowy crafting</option>
+      </select>
+      <div id="custom-world" hidden>
+        <label for="world-seed">Ziarno świata (opcjonalne)</label
+        ><input
+          id="world-seed"
+          type="number"
+          min="0"
+          max="4294967295"
+          placeholder="Puste = nowe losowe ziarno"
+        />
+        <label for="world-terrain">Krajobraz</label
+        ><select id="world-terrain">
+          <option value="meadow">Słoneczna łąka</option>
+          <option value="forest">Leśna wyspa</option>
+          <option value="rocky">Kamieniste wybrzeże</option>
+        </select>
+        <label for="world-vegetation">Roślinność</label
+        ><select id="world-vegetation">
+          <option value="sparse">Rzadka</option>
+          <option value="normal" selected>Umiarkowana</option>
+          <option value="dense">Gęsta</option>
+        </select>
+        <label for="world-resources">Zasoby</label
+        ><select id="world-resources">
+          <option value="scarce">Mniej zasobów</option>
+          <option value="normal" selected>Standardowo</option>
+          <option value="rich">Obficie</option>
+        </select>
+        <label class="setting-choice"
+          ><input id="world-wildlife" type="checkbox" checked />Motyle, robaczki
+          i króliki</label
         >
-        <span class="touch-intro"
-          ><kbd>przycisk Zbierz</kbd> przytrzymaj, aby zbierać</span
-        >
-        <span class="desktop-intro"><kbd>WASD / strzałki</kbd> poruszanie</span
-        ><span class="desktop-intro"><kbd>E</kbd> zbieranie surowców</span
-        ><span><kbd>dotknij wyspy</kbd> podejdź do miejsca</span>
       </div>
-      <button id="start" class="primary-button">
-        Zacznij wyprawę <span>→</span></button
-      ><small>Bez logowania · Postęp zapisuje się w tej przeglądarce</small>
+      <p>
+        Nowa wyprawa losuje nową mapę. Kontynuowanie odtwarza ten sam świat i
+        postęp. Tryb odkrywcy nie pobiera surowców za receptury.
+      </p>
+      <label id="replace-save" class="setting-choice" hidden
+        ><input id="replace-confirm" type="checkbox" />Zastąp moją dotychczasową
+        wyprawę (nie można cofnąć)</label
+      >
+      <p id="menu-status" role="status"></p>
+      <button id="launch-game" class="primary-button">
+        Rozpocznij nową wyprawę →</button
+      ><button id="menu-settings" class="secondary-button">
+        Ustawienia grafiki i dźwięku
+      </button>
     </dialog>
     <dialog id="help-dialog" class="modal compact">
       <span class="eyebrow">PORADNIK ODKRYWCY</span>
@@ -413,12 +447,20 @@
         <label for="graphics-quality">Jakość obrazu</label
         ><select id="graphics-quality">
           <option value="auto">Automatyczna — ostrzej przy zbliżeniu</option>
+          <option value="fullhd">Full HD — dłuższa krawędź 1920 px</option>
+          <option value="4k">
+            4K — dłuższa krawędź 3840 px (duże obciążenie)
+          </option>
           <option value="medium">
             Średnia — niższa rozdzielczość i cienie
           </option>
           <option value="low">Niska — bez cieni, mniejsze obciążenie</option>
         </select>
-        <p>Zmiana działa od razu, bez restartu wyprawy.</p>
+        <p>
+          Zmiana działa od razu. Full HD i 4K zwiększają rozdzielczość
+          renderowania, nie zmieniają stylu modeli. 4K może mocno obciążać
+          telefon i jest ograniczone możliwościami GPU.
+        </p>
       </fieldset>
       <fieldset>
         <legend>Dźwięk</legend>
@@ -490,6 +532,14 @@
         Wróć do gry →
       </button>
     </dialog>
+    <section id="tutorial" class="tutorial" aria-label="Samouczek" hidden>
+      <div>
+        <strong id="tutorial-title"></strong>
+        <p id="tutorial-text"></p>
+      </div>
+      <button id="tutorial-skip" aria-label="Pomiń samouczek">×</button
+      ><button id="tutorial-done" hidden>Zakończ samouczek</button>
+    </section>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

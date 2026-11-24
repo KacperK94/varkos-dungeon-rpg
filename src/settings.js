@@ -7,7 +7,7 @@ export function normalizeSettings(value = {}) {
       : fallback;
   return {
     controls: data.controls === "arrows" ? "arrows" : "tap",
-    graphics: ["auto", "medium", "low"].includes(data.graphics)
+    graphics: ["auto", "medium", "low", "fullhd", "4k"].includes(data.graphics)
       ? data.graphics
       : "auto",
     muted: data.muted === true,

@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test",
-    "check": "node --check src/main.js && node --check src/world.js && node --check src/game.js && node --check src/press.js && node --check src/camera-gestures.js && node --check src/render-quality.js && node --check src/settings.js && node --check src/audio.js"
+    "check": "node --check src/main.js && node --check src/world.js && node --check src/game.js && node --check src/press.js && node --check src/camera-gestures.js && node --check src/render-quality.js && node --check src/settings.js && node --check src/audio.js && node --check src/world-map.js && node --check src/wildlife.js"
   },
   "dependencies": {
     "three": "0.187.0"
