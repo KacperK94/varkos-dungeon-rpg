@@ -63,3 +63,7 @@ To rozwinięcie samodzielnego Żaru Wyspy, nie migracja dawnego VARKOS-a. Bez mu
 Testy obejmują generator i preferencje, zapis nowy/stary, kolizje i drogę, oba tryby craftingu, ekwipunek, gesty, jakość i mikser. Testy modelu nie dowodzą płynności/odsłuchu ani pełnej grywalności na fizycznych Android/iOS; potrzebne są próby urządzeniowe. Weryfikacja UI podglądu jest opisana w PR.
 
 Moduły: `game.js` stan/reguły, `world-map.js` generator/kolizje/droga, `world.js` rendering, `wildlife.js` fauna, `main.js` UI/menu/samouczek, `render-quality.js`, `settings.js`, `audio.js`, `camera-gestures.js`, `press.js`. Testy w `tests/`.
+
+### Gęstsza flora
+
+Dekoracyjna roślinność ma osobny, deterministyczny strumień losowania: na dużej mapie standardowo 3800 kęp traw/kwiatów/krzewów (2470 dla Rzadkiej, 5700 dla Gęstej). 70% prób trafia do losowych skupisk, reszta wypełnia mapę; wielkość, obrót i odcień są zróżnicowane. Chronione pozostają ścieżka obozu, start i dostęp do zasobów. Rośliny są niskie, dekoracyjne, bez dodatkowych kolizji i łupu. Instancing grupuje je w cztery obiekty renderowania, zamiast tysięcy oddzielnych obiektów. Nie zmienia się generator zasobów ani zapisane ID; także kontynuowany świat otrzymuje florę po odświeżeniu, bez rozpoczynania nowej wyprawy. Wydajność na telefonach wymaga osobnych pomiarów.

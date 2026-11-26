@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { addFlora } from "./flora-renderer.js";
 import { bindCameraGestures, clampZoom } from "./camera-gestures.js";
 import { renderQuality, applyRenderQuality } from "./render-quality.js";
 import {
@@ -156,37 +157,8 @@ export function createWorld(canvas, state, initialSettings) {
     );
     patch.rotation.y = i * 0.7;
   }
-  // Handful of rocks at the shoreline, with small tufts across the meadow.
-  for (let i = 0; i < 70; i++) {
-    const angle = random() * Math.PI * 2;
-    const radius = 3 + random() * (state.world ? 43 : 13);
-    const x = Math.cos(angle) * radius,
-      z = Math.sin(angle) * radius;
-    if (Math.abs(x) < 2 || (z < -8 && Math.abs(x) < 4)) continue;
-    const grass = new THREE.Group();
-    grass.position.set(x, 0.27, z);
-    for (let j = 0; j < 3; j++) {
-      const blade = mesh(
-        new THREE.ConeGeometry(0.09, 0.32 + random() * 0.3, 3),
-        "#748c51",
-        grass,
-        j * 0.1,
-        0.18,
-        j * 0.05,
-      );
-      blade.rotation.z = (j - 1) * 0.25;
-    }
-    scene.add(grass);
-    if (i % 5 === 0)
-      mesh(
-        new THREE.IcosahedronGeometry(0.12),
-        "#f0d390",
-        scene,
-        x + 0.3,
-        0.52,
-        z,
-      );
-  }
+  // Batched decorative vegetation keeps draw calls low on phones.
+  addFlora(scene, state.world, generated);
   for (let i = 0; i < 18; i++) {
     const a = random() * Math.PI * 2;
     const stone = mesh(
