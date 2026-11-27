@@ -2,6 +2,7 @@
 
 ## Początek sesji i automatyczny dobór skilli
 - Na początku każdej sesji pracy nad tym repozytorium odczytaj aktualny `AGENTS.md`. Po wznowieniu pracy lub utracie kontekstu upewnij się, że znasz obowiązujące instrukcje.
+- Przy tworzeniu, rozbudowie, naprawie, badaniu lub audycie produktu odczytaj `.agents/skills/project-workflow/SKILL.md` jako proces koordynujący. Dobierz w nim ścieżkę do prośby, a następnie zastosuj właściwe skille z indeksu; nie uruchamiaj pełnego cyklu do drobnej zmiany ani nie rozszerzaj zakresu polecenia.
 - Przed pierwszą czynnością dotyczącą zadania przejrzyj pola `name` i `description` w plikach `.agents/skills/*/SKILL.md`. Powtórz dobór, gdy użytkownik zmieni zadanie lub zakres prac.
 - Samodzielnie dobierz najmniejszy zestaw skilli odpowiadający celowi zadania. Nie wymagaj od użytkownika podawania ich nazw ani osobnej prośby o aktywację.
 - Przed zastosowaniem wybranego skilla przeczytaj cały jego `SKILL.md` i potrzebne załączniki. Nie wczytuj pełnej treści wszystkich skilli bez potrzeby.
@@ -13,6 +14,7 @@
 ### Indeks doboru
 | Rodzaj zadania | Skill do odczytania |
 | --- | --- |
+| Koordynacja pracy nad produktem od briefu do zweryfikowanego rezultatu | `.agents/skills/project-workflow/SKILL.md`; wybierz pełną lub skróconą ścieżkę, a dopiero potem skille wykonawcze |
 | Nowa aplikacja, gra lub samodzielny projekt | `.agents/skills/project-planning/SKILL.md` wraz z `.agents/skills/originality-research/SKILL.md`: potrzeby → rozeznanie rynku → świeża koncepcja → pełny plan; dopiero potem `.agents/skills/focused-coding/SKILL.md` przy kodowaniu |
 | Świeży pomysł lub rozeznanie rynku bez zlecenia budowy | `.agents/skills/originality-research/SKILL.md`; bez rozpoczynania implementacji |
 | Implementacja, naprawa błędu, refaktoryzacja istniejącego projektu | `.agents/skills/focused-coding/SKILL.md` |
