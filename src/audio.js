@@ -60,7 +60,27 @@ export function createAudio(
     oscillator.start(time);
     oscillator.stop(time + duration + 0.05);
   }
+  let weatherKind = "clear",
+    weatherBeat = 0;
+  function weatherSound() {
+    if (!active) return;
+    weatherBeat++;
+    if (weatherKind === "storm" && weatherBeat % 5 === 0)
+      tone("ambient", 45, 1.5, 0.2, 0, "triangle");
+    if (weatherKind === "wind" || weatherKind === "storm")
+      tone(
+        "ambient",
+        weatherKind === "wind" ? 100 : 170,
+        1,
+        0.06,
+        0,
+        "triangle",
+      );
+    if (weatherKind === "meteors" && weatherBeat % 3 === 0)
+      tone("ambient", 740, 0.65, 0.06);
+  }
   function musicBeat() {
+    weatherSound();
     if (!active) return;
     const notes = [196, 246.94, 293.66, 369.99, 329.63, 293.66, 246.94, 220];
     tone("music", notes[beat++ % notes.length], 1.8, 0.09);
@@ -122,6 +142,9 @@ export function createAudio(
   }
   return {
     unlock,
+    setWeather(kind) {
+      weatherKind = kind;
+    },
     update,
     setActive(value) {
       if (active === value) return;

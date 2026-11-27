@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { weatherAt } from "./weather.js";
+import { createWeatherRenderer } from "./weather-renderer.js";
 import { addFlora } from "./flora-renderer.js";
 import { bindCameraGestures, clampZoom } from "./camera-gestures.js";
 import { renderQuality, applyRenderQuality } from "./render-quality.js";
@@ -31,6 +33,8 @@ export function createWorld(canvas, state, initialSettings) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog("#79b9bb", 65, 155);
+  const weatherRenderer = createWeatherRenderer(scene);
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const camera = new THREE.OrthographicCamera(-25, 25, 25, -25, 0.1, 180);
   let zoom = 24;
   const light = new THREE.DirectionalLight("#fff0cf", 3.1);
@@ -547,6 +551,7 @@ export function createWorld(canvas, state, initialSettings) {
   }
   let time = 0;
   function frame(dt, movement, running, active) {
+    const weather = weatherAt(state.elapsed, state.world?.seed);
     if (active) time += dt;
     if (active) {
       let dx = movement.x,
@@ -569,7 +574,7 @@ export function createWorld(canvas, state, initialSettings) {
       }
       const length = Math.hypot(dx, dz);
       if (length > 0.01) {
-        const speed = (running ? 6.8 : 4.2) * dt;
+        const speed = (running ? 6.8 : 4.2) * dt * weather.speed;
         const step = Math.min(speed, length);
         const next = moveWithCollisions(
           { x: player.position.x, z: player.position.z },
@@ -645,7 +650,8 @@ export function createWorld(canvas, state, initialSettings) {
     for (const node of nodes) {
       node.group.visible =
         (state.depleted[node.id] || 0) < node.hits &&
-        Math.hypot(node.x - player.position.x, node.z - player.position.z) < 42;
+        Math.hypot(node.x - player.position.x, node.z - player.position.z) <
+          weather.range;
     }
 
     for (let i = 0; i < ripples.length; i++)
@@ -667,6 +673,16 @@ export function createWorld(canvas, state, initialSettings) {
       1,
     );
     gem.rotation.y = time * 0.6;
+    weatherRenderer.update(
+      dt,
+      weather,
+      player.position,
+      renderer,
+      light,
+      active,
+      reducedMotion,
+      settings.graphics === "low",
+    );
     renderer.render(scene, camera);
     return target;
   }

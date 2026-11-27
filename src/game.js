@@ -136,6 +136,13 @@ export function restore(raw) {
       state.position = { x: data.position.x, z: data.position.z };
     if (Number.isFinite(data.elapsed) && data.elapsed >= 0)
       state.elapsed = Math.min(data.elapsed, 1e8);
+    if (
+      Number.isInteger(data.weatherSettled) &&
+      data.weatherSettled >= -1 &&
+      data.weatherSettled <= Math.floor(state.elapsed / 150)
+    )
+      state.weatherSettled = data.weatherSettled;
+
     return state;
   } catch {
     return null;
