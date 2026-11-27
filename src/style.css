@@ -2354,3 +2354,44 @@ body:has(.workshop.mobile-open) .tutorial {
     display: none;
   }
 }
+
+.weather-status {
+  position: absolute;
+  left: 28px;
+  top: 100px;
+  max-width: calc(100% - 90px);
+  margin: 0;
+  padding: 7px 10px;
+  background: #f7f3e8e8;
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #3b5345;
+  pointer-events: none;
+}
+@media (max-width: 850px), (pointer: coarse) {
+  .weather-status {
+    left: 14px;
+    top: 112px;
+    font-size: 10px;
+    max-width: calc(100% - 28px);
+  }
+  .quest-panel {
+    top: 175px;
+  }
+  .tutorial {
+    top: 240px;
+  }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  .weather-status {
+    top: 60px;
+    max-width: 60%;
+  }
+  .quest-panel {
+    top: 8px;
+  }
+  .tutorial {
+    top: 120px;
+  }
+}

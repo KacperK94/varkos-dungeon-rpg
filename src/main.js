@@ -1,4 +1,5 @@
 import "./style.css";
+import { weatherAt, settleWeather } from "./weather.js";
 import {
   SAVE_KEY,
   MATERIALS,
@@ -30,6 +31,8 @@ try {
 const state =
   saved ||
   createExpedition({ seed: crypto.getRandomValues(new Uint32Array(1))[0] });
+if (saved && !Number.isInteger(state.weatherSettled))
+  state.weatherSettled = Math.floor((state.elapsed - 80) / 150);
 let sessionStarted = false;
 let settings;
 try {
@@ -631,6 +634,16 @@ function tick(now) {
       }
       if (holdingGather) gatherNearest();
       state.elapsed += dt;
+      const reward = settleWeather(state);
+      if (reward) {
+        notify(`Opad meteorów: +${reward} kryształy w plecaku`);
+        renderUI();
+        save();
+      }
+      const weather = weatherAt(state.elapsed, state.world?.seed);
+      $("#weather-status").textContent =
+        `${weather.name} · ${Math.ceil(weather.remaining)} s · ${weather.hint}`;
+      audio.setWeather(weather.kind);
       saveTime += dt;
       if (saveTime > 12) {
         save();

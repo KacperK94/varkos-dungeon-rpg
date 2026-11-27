@@ -67,3 +67,14 @@ Moduły: `game.js` stan/reguły, `world-map.js` generator/kolizje/droga, `world.
 ### Gęstsza flora
 
 Dekoracyjna roślinność ma osobny, deterministyczny strumień losowania: na dużej mapie standardowo 3800 kęp traw/kwiatów/krzewów (2470 dla Rzadkiej, 5700 dla Gęstej). 70% prób trafia do losowych skupisk, reszta wypełnia mapę; wielkość, obrót i odcień są zróżnicowane. Chronione pozostają ścieżka obozu, start i dostęp do zasobów. Rośliny są niskie, dekoracyjne, bez dodatkowych kolizji i łupu. Instancing grupuje je w cztery obiekty renderowania, zamiast tysięcy oddzielnych obiektów. Nie zmienia się generator zasobów ani zapisane ID; także kontynuowany świat otrzymuje florę po odświeżeniu, bez rozpoczynania nowej wyprawy. Wydajność na telefonach wymaga osobnych pomiarów.
+
+### Anomalie pogodowe
+
+Pogoda zależy od zapisanego aktywnego czasu wyprawy i ziarna świata. Pierwsze zdarzenie zaczyna się po 30 sekundach gry, trwa 50 sekund; kolejne cykle mają 150 sekund, z ostrzeżeniem 10 sekund przed zdarzeniem. Pauza, menu i ukryta karta nie przesuwają czasu. Reload nie losuje nowej pogody.
+
+- Mgła ukrywa zasoby dalej niż 10 m i zwiększa zamglenie sceny.
+- Wichura zmniejsza szybkość ruchu i biegu o 35%.
+- Burza zmniejsza ruch o 20%, zasięg widocznych zasobów do 18 m, dodaje opad i powolne rozjaśnienia światła (wyłączone przy prefers-reduced-motion).
+- Meteory są widoczne nad graczem. Po ukończeniu zdarzenia 3 kryształy są **automatycznie** dodawane do plecaka, nie tworzą osobnych węzłów na mapie. Punkt rozliczenia zapisywany jest jako `weatherSettled`, aby nie dublować nagrody po Kontynuuj. Stare zapisy nie otrzymują nagród za dawno zakończone cykle.
+
+HUD opisuje skutek i czas do zmiany. Pogodowe tony burzy, wiatru i meteorów przechodzą przez istniejący kanał Otoczenie, globalną głośność i wyciszenie. To syntezowane dźwięki, nie nagrania ulewy. Niska jakość ogranicza cząstki. Brak obrażeń, niszczenia budowli i strat zapisanych przedmiotów.
